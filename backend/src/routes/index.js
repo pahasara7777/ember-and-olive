@@ -2,6 +2,7 @@ import { Router } from 'express';
 import auth from './auth.js';
 import menu from './menu.js';
 import orders from './orders.js';
+import reservations from './reservations.js';
 
 const router = Router();
 
@@ -11,9 +12,7 @@ const todo = (req, res) => res.status(501).json({ error: { message: `Not impleme
 router.use('/menu', menu);
 
 // Reservations
-router.get('/reservations/availability', todo);
-router.post('/reservations', todo);
-router.patch('/reservations/:reference', todo);
+router.use('/reservations', reservations);
 
 // Ordering and payments
 router.use('/orders', orders);
