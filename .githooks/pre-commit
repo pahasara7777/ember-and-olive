@@ -1,0 +1,3 @@
+#!/bin/sh
+# Blocks commits that contain secrets. Enabled automatically by `npm install` (see "prepare" in package.json).
+node scripts/check-secrets.mjs --staged
