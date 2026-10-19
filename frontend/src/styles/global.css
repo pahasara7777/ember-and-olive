@@ -41,7 +41,7 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: 500; margin: 0; lett
 .header-actions { display: flex; gap: 12px; }
 
 .site-footer { background: var(--olive); color: #e8e1d0; margin-top: 96px; padding: 48px 0; font-size: 14px; }
-.page { padding: 64px 0; }
+.page { padding-block: 64px; } /* block only, so .container keeps its side padding */
 .placeholder { border: 1.5px dashed #bdb29a; border-radius: var(--radius); padding: 32px; color: var(--muted); margin-top: 24px; }
 
 /* ---- Pages and forms ---- */
