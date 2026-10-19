@@ -1,25 +1,13 @@
 import { Router } from 'express';
-import { MenuCategory, MenuItem } from '../models/index.js';
 import auth from './auth.js';
+import menu from './menu.js';
 
 const router = Router();
 
 // Placeholder for endpoints that are planned but not built yet.
 const todo = (req, res) => res.status(501).json({ error: { message: `Not implemented yet: ${req.method} ${req.originalUrl}` } });
 
-// Public menu: the one read endpoint wired up, as a pattern for the rest.
-router.get('/menu', async (req, res) => {
-  const [categories, items] = await Promise.all([
-    MenuCategory.find({ active: true }).sort('sortOrder').lean(),
-    MenuItem.find({ archived: false }).sort('sortOrder').lean()
-  ]);
-  res.json({ categories, items });
-});
-router.get('/menu/:slug', async (req, res) => {
-  const item = await MenuItem.findOne({ slug: req.params.slug, archived: false }).lean();
-  if (!item) return res.status(404).json({ error: { message: 'Dish not found' } });
-  res.json(item);
-});
+router.use('/menu', menu);
 
 // Reservations
 router.get('/reservations/availability', todo);
