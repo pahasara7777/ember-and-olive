@@ -7,8 +7,8 @@ function scan(value, depth = 0) {
   if (Array.isArray(value)) return value.forEach((v) => scan(v, depth + 1));
   if (value && typeof value === 'object') {
     for (const key of Object.keys(value)) {
-      // "$ne", "$gt", "a.b" are MongoDB operators or paths; no honest form field uses them.
-      if (key.startsWith('$') || key.includes('.') || BAD_KEYS.has(key)) throw new HttpError(400, 'Invalid input');
+      // "$ne", "a.b" and "a[$ne]" are MongoDB operators, paths or qs-style nesting; no honest form field uses them.
+      if (/[$.[\]]/.test(key) || BAD_KEYS.has(key)) throw new HttpError(400, 'Invalid input');
       scan(value[key], depth + 1);
     }
   }
