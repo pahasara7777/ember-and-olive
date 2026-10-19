@@ -13,7 +13,8 @@ export const RULES = [
   { name: 'Hard-coded password or API key', re: /\b(?:password|passwd|api[_-]?key|secret|token)\s*[:=]\s*['"]([^'"\s]{16,})['"]/gi, secretGroup: 1 }
 ];
 
-export const SKIP_FILES = /(^|\/)(package-lock\.json|.*\.(png|jpe?g|gif|webp|ico|woff2?|zip|bundle))$/i;
+// secret-patterns.test.mjs holds deliberately fake secrets to prove the rules work.
+export const SKIP_FILES = /(^|\/)(package-lock\.json|secret-patterns\.test\.mjs|.*\.(png|jpe?g|gif|webp|ico|woff2?|zip|bundle))$/i;
 export const FORBIDDEN_FILES = /(^|\/)\.env(\..+)?$/; // .env.example is allowed below
 export const isForbiddenFile = (path) => FORBIDDEN_FILES.test(path) && !/\.env\.example$/.test(path);
 
