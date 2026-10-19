@@ -9,7 +9,7 @@ export async function loadUser(req, res, next) {
   const claims = verifySession(token, req.app.locals.env);
   if (!claims) return next();
   const user = await User.findById(claims.sub).select('+passwordChangedAt');
-  const revoked = user?.passwordChangedAt && claims.iat * 1000 < user.passwordChangedAt.getTime();
+  const revoked = user?.passwordChangedAt && claims.iat < Math.floor(user.passwordChangedAt.getTime() / 1000);
   if (user && user.active && !revoked) req.user = user;
   next();
 }
