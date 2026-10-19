@@ -36,3 +36,9 @@ test('error messages never contain the secret values', () => {
     assert.ok(!e.message.includes('tooshort-but-secret-ish'));
   }
 });
+
+test('DNS_SERVERS is optional but must be IP addresses', () => {
+  assert.equal(loadEnv(good).DNS_SERVERS, undefined);
+  assert.equal(loadEnv({ ...good, DNS_SERVERS: '8.8.8.8, 1.1.1.1' }).DNS_SERVERS, '8.8.8.8, 1.1.1.1');
+  assert.throws(() => loadEnv({ ...good, DNS_SERVERS: 'evil.example.com' }), /DNS_SERVERS/);
+});
