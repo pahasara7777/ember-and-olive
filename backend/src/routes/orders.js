@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import mongoose from 'mongoose';
 import { z } from 'zod';
 import { MenuItem, Order } from '../models/index.js';
 import { HttpError } from '../middleware/error.js';
@@ -69,7 +70,7 @@ router.post('/', formLimiter(), async (req, res) => {
   }
 
   const ids = [...new Set(body.lines.map((l) => l.menuItem))];
-  const items = await MenuItem.find({ _id: { $in: ids } });
+  const items = await MenuItem.find({ _id: mongoose.trusted({ $in: ids }) }) // ids are already validated as ObjectIds;
   const priced = priceCart(new Map(items.map((i) => [String(i._id), i])), body.lines, body.fulfillment);
 
   const now = new Date();
