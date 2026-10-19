@@ -1,17 +1,23 @@
 import express from 'express';
-import cors from 'cors';
-import helmet from 'helmet';
+import cookieParser from 'cookie-parser';
 import api from './routes/index.js';
 import { notFound, errorHandler } from './middleware/error.js';
+import { securityHeaders, corsPolicy, originGuard } from './middleware/security.js';
+import { apiLimiter } from './middleware/rateLimit.js';
+import { rejectOperatorKeys } from './middleware/sanitize.js';
+import { loadUser } from './middleware/auth.js';
 
-export function createApp() {
+export function createApp({ env }) {
   const app = express();
-  app.use(helmet());
-  app.use(cors({ origin: process.env.CLIENT_ORIGIN || 'http://localhost:5173', credentials: true }));
-  app.use(express.json({ limit: '100kb' }));
+  app.locals.env = env;
+  app.disable('x-powered-by');
+  app.set('trust proxy', env.TRUST_PROXY); // so rate limits see the real client IP behind a proxy
+
+  app.use(securityHeaders(env));
+  app.use('/api', corsPolicy(env), apiLimiter(), originGuard(env), cookieParser(), express.json({ limit: '50kb' }), rejectOperatorKeys);
 
   app.get('/api/health', (req, res) => res.json({ ok: true }));
-  app.use('/api/v1', api);
+  app.use('/api/v1', loadUser, api);
 
   app.use(notFound);
   app.use(errorHandler);

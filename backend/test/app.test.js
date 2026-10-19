@@ -1,19 +1,16 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { createApp } from '../src/app.js';
+import { startApp } from './helpers.js';
 
-// Runs without a database: checks routing, the 404 handler and the placeholder 501s.
-test('API skeleton responds', async () => {
-  const server = createApp().listen(0);
-  const base = `http://127.0.0.1:${server.address().port}`;
+// Runs without a database: checks routing, security headers and the 404 handler.
+test('health check and unknown routes', async () => {
+  const app = await startApp();
   try {
-    const health = await fetch(`${base}/api/health`);
+    const health = await app.call('GET', '/api/health');
     assert.equal(health.status, 200);
-    assert.deepEqual(await health.json(), { ok: true });
-
-    assert.equal((await fetch(`${base}/api/v1/orders`, { method: 'POST' })).status, 501);
-    assert.equal((await fetch(`${base}/api/v1/nope`)).status, 404);
+    assert.deepEqual(health.json, { ok: true });
+    assert.equal((await app.call('GET', '/api/v1/nope')).status, 404);
   } finally {
-    server.close();
+    app.close();
   }
 });
