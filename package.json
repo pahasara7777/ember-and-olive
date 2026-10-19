@@ -1,0 +1,19 @@
+{
+  "name": "ember-and-olive",
+  "private": true,
+  "description": "Restaurant website and ordering platform for The Ember & Olive (MERN).",
+  "workspaces": ["frontend", "backend"],
+  "scripts": {
+    "dev": "concurrently -n api,web -c green,yellow \"npm run dev -w @ember-olive/backend\" \"npm run dev -w @ember-olive/frontend\"",
+    "build": "npm run build -w @ember-olive/frontend",
+    "start": "npm start -w @ember-olive/backend",
+    "seed": "npm run seed -w @ember-olive/backend",
+    "test": "npm test -w @ember-olive/backend"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.6"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
