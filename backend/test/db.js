@@ -9,6 +9,9 @@ export async function connectTestDb(name) {
   mongoose.set('sanitizeFilter', true);
   await mongoose.connect(process.env.MONGODB_TEST_URI, { dbName: `eo-test-${name}` });
   await mongoose.connection.dropDatabase();
+  // dropDatabase removes the unique indexes too, so build them again before the tests run.
+  // allSettled: FerretDB has no text indexes, and that must not stop the tests that need the unique ones.
+  await Promise.allSettled(mongoose.modelNames().map((name) => mongoose.model(name).createIndexes()));
 }
 
 export async function disconnectTestDb() {
