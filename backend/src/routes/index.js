@@ -3,6 +3,8 @@ import auth from './auth.js';
 import menu from './menu.js';
 import orders from './orders.js';
 import reservations from './reservations.js';
+import account from './account.js';
+import content from './content.js';
 
 const router = Router();
 
@@ -21,14 +23,10 @@ router.post('/payments/webhook', todo);
 
 // Accounts
 router.use('/auth', auth);
-router.get('/account/orders', todo);
+router.use('/account', account);
 
-// Content
-router.get('/reviews', todo);
-router.post('/reviews', todo);
-router.post('/catering-enquiries', todo);
-router.get('/blog', todo);
-router.get('/gallery', todo);
+// Content: gallery, blog, reviews, catering enquiries
+router.use('/', content);
 
 // Admin (role checks go on these routes)
 router.use('/admin', todo);
