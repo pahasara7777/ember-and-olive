@@ -7,7 +7,7 @@
     "dev": "nodemon --watch src src/index.js",
     "start": "node src/index.js",
     "seed": "node src/seed/seed.js",
-    "test": "node --test"
+    "test": "node --test --test-concurrency=1"
   },
   "dependencies": {
     "cookie-parser": "^1.4.7",
