@@ -16,6 +16,7 @@ const schema = z.object({
     .min(32, 'must be at least 32 characters')
     .refine((v) => !PLACEHOLDER.test(v), 'is still a placeholder value'),
   TIMEZONE: z.string().default('Asia/Colombo'),
+  DNS_SERVERS: z.string().regex(/^\s*[0-9a-fA-F:.]+(\s*,\s*[0-9a-fA-F:.]+)*\s*$/, 'must be comma-separated IP addresses').optional(),
   TRUST_PROXY: z.coerce.number().int().min(0).default(0) // number of reverse proxies in front of the API
 });
 
