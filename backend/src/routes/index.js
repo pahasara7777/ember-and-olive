@@ -5,21 +5,17 @@ import orders from './orders.js';
 import reservations from './reservations.js';
 import account from './account.js';
 import content from './content.js';
+import admin from './admin.js';
 
 const router = Router();
-
-// Placeholder for endpoints that are planned but not built yet.
-const todo = (req, res) => res.status(501).json({ error: { message: `Not implemented yet: ${req.method} ${req.originalUrl}` } });
 
 router.use('/menu', menu);
 
 // Reservations
 router.use('/reservations', reservations);
 
-// Ordering and payments
+// Ordering (cash only for now; no card endpoints exist until a payment provider is chosen)
 router.use('/orders', orders);
-router.post('/payments/checkout', todo);
-router.post('/payments/webhook', todo);
 
 // Accounts
 router.use('/auth', auth);
@@ -28,7 +24,7 @@ router.use('/account', account);
 // Content: gallery, blog, reviews, catering enquiries
 router.use('/', content);
 
-// Admin (role checks go on these routes)
-router.use('/admin', todo);
+// Staff only: every route inside checks the signed-in user's role on the server
+router.use('/admin', admin);
 
 export default router;
