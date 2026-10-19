@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { MenuCategory, MenuItem } from '../models/index.js';
+import auth from './auth.js';
 
 const router = Router();
 
@@ -32,9 +33,7 @@ router.post('/payments/checkout', todo);
 router.post('/payments/webhook', todo);
 
 // Accounts
-router.post('/auth/register', todo);
-router.post('/auth/login', todo);
-router.post('/auth/logout', todo);
+router.use('/auth', auth);
 router.get('/account/orders', todo);
 
 // Content
