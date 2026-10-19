@@ -25,4 +25,5 @@ export const requireRole = (...roles) => (req, res, next) => {
   next();
 };
 
-export const STAFF = ['host', 'kitchen', 'manager', 'owner'];
+export const STAFF = ['host', 'kitchen', 'manager', 'owner']; // can see orders and customer contact details
+export const ANY_STAFF = [...STAFF, 'marketing'];
