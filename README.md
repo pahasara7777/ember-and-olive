@@ -50,6 +50,14 @@ Restaurant website and ordering platform for The Ember & Olive, a Mediterranean 
 | `npm run build` | Production build of the frontend into `frontend/dist` |
 | `npm start` | Runs the backend; with `NODE_ENV=production` it also serves the built site |
 
+### Troubleshooting
+
+| Message | Fix |
+|---|---|
+| `Invalid environment configuration` | The list under it names the missing or weak setting in `backend/.env` (values are never printed). |
+| `querySrv EBADRESP` or `ECONNREFUSED` when connecting to Atlas | Your network's DNS cannot resolve `mongodb+srv://` addresses (common on phone hotspots). Add `DNS_SERVERS=8.8.8.8,1.1.1.1` to `backend/.env`. |
+| `Server selection timed out` | In Atlas, open Network Access and add your current IP address. |
+
 ### Database tests
 
 Tests that touch MongoDB are skipped unless you point them at a **throwaway** server, for example a local `mongod`:
