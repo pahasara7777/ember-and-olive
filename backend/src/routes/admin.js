@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 import { z } from 'zod';
 import { AuditLog, CateringEnquiry, MenuItem, Order, Reservation, Review, User, ORDER_STATUSES, ROLES } from '../models/index.js';
 import { HttpError } from '../middleware/error.js';
-import { STAFF, requireRole } from '../middleware/auth.js';
+import { ANY_STAFF, STAFF, requireRole } from '../middleware/auth.js';
 import { audit } from '../lib/audit.js';
 import { optionalPlain, objectId } from '../lib/text.js';
 import { toUtc } from '../lib/booking.js';
@@ -12,7 +12,8 @@ const router = Router();
 const trusted = mongoose.trusted;
 
 // Every admin route needs a signed-in staff member; each route then narrows to the roles that may use it.
-router.use(requireRole(...STAFF));
+router.use(requireRole(...ANY_STAFF));
+const FLOOR = requireRole(...STAFF); // marketing staff never see customer contact details
 
 const byId = async (Model, id) => {
   const parsed = objectId.safeParse(id);
@@ -22,7 +23,8 @@ const byId = async (Model, id) => {
 };
 
 // ---- Dashboard ----
-router.get('/summary', async (req, res) => {
+// Revenue figures are for management only.
+router.get('/summary', requireRole('manager', 'owner'), async (req, res) => {
   const today = new Date(Date.now() + 5.5 * 3600000).toISOString().slice(0, 10); // today's date in Colombo
   const from = toUtc(today, '00:00');
   const to = new Date(from.getTime() + 24 * 3600000);
@@ -45,13 +47,13 @@ const NEXT = {
   'out-for-delivery': ['completed']
 };
 
-router.get('/orders', async (req, res) => {
+router.get('/orders', FLOOR, async (req, res) => {
   const status = z.enum(ORDER_STATUSES).optional().parse(req.query.status);
   const orders = await Order.find(status ? { status } : {}).sort('-createdAt').limit(100).lean();
   res.json({ orders });
 });
 
-router.patch('/orders/:id/status', async (req, res) => {
+router.patch('/orders/:id/status', FLOOR, async (req, res) => {
   const body = z.strictObject({ status: z.enum(ORDER_STATUSES), reason: optionalPlain(200) }).parse(req.body);
   const order = await byId(Order, req.params.id);
   if (!NEXT[order.status]?.includes(body.status)) throw new HttpError(409, `An order that is ${order.status} cannot become ${body.status}`);
