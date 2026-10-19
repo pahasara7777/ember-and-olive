@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import auth from './auth.js';
 import menu from './menu.js';
+import orders from './orders.js';
 
 const router = Router();
 
@@ -15,8 +16,7 @@ router.post('/reservations', todo);
 router.patch('/reservations/:reference', todo);
 
 // Ordering and payments
-router.post('/orders', todo);
-router.get('/orders/:reference', todo);
+router.use('/orders', orders);
 router.post('/payments/checkout', todo);
 router.post('/payments/webhook', todo);
 
