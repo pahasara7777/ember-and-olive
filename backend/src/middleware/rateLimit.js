@@ -15,3 +15,5 @@ export const apiLimiter = (opts = {}) => make({ windowMs: 15 * 60 * 1000, limit:
 export const authLimiter = (opts = {}) => make({ windowMs: 15 * 60 * 1000, limit: 10, skipSuccessfulRequests: true, ...opts });
 // Public forms that create records or send mail (reservations, orders, enquiries, reviews).
 export const formLimiter = (opts = {}) => make({ windowMs: 60 * 60 * 1000, limit: 30, ...opts });
+// Looking up an order or reservation by reference: slows anyone trying to guess references.
+export const lookupLimiter = (opts = {}) => make({ windowMs: 15 * 60 * 1000, limit: 60, ...opts });
