@@ -34,7 +34,7 @@ before(async () => {
 });
 after(async () => { if (skip) return; Object.values(clients).forEach((c) => c.close()); await disconnectTestDb(); });
 
-const GETS = ['/admin/summary', '/admin/orders', '/admin/reservations', '/admin/menu', '/admin/reviews', '/admin/enquiries', '/admin/users', '/admin/audit'];
+const GETS = ['/admin/summary', '/admin/orders', '/admin/reservations', '/admin/menu', '/admin/reviews', '/admin/enquiries', '/admin/messages', '/admin/users', '/admin/audit'];
 
 test('signed-out visitors get 401 on every admin route', { skip }, async () => {
   for (const path of GETS) assert.equal((await clients.anon.call('GET', `/api/v1${path}`)).status, 401, path);
@@ -45,7 +45,7 @@ test('customers get 403 on every admin route', { skip }, async () => {
 });
 
 test('each role reaches only the routes meant for it', { skip }, async () => {
-  const can = { host: ['/admin/orders', '/admin/reservations'], kitchen: ['/admin/orders', '/admin/menu'], marketing: ['/admin/reviews', '/admin/enquiries'], manager: GETS.filter((p) => !['/admin/users', '/admin/audit'].includes(p)), owner: GETS };
+  const can = { host: ['/admin/orders', '/admin/reservations'], kitchen: ['/admin/orders', '/admin/menu'], marketing: ['/admin/reviews', '/admin/enquiries', '/admin/messages'], manager: GETS.filter((p) => !['/admin/users', '/admin/audit'].includes(p)), owner: GETS };
   for (const [role, allowed] of Object.entries(can)) {
     for (const path of GETS) {
       const status = (await clients[role].call('GET', `/api/v1${path}`)).status;
@@ -117,4 +117,14 @@ test('deactivating a user ends their open session', { skip }, async () => {
 test('admin ids that are not ObjectIds are 404, not errors', { skip }, async () => {
   assert.equal((await clients.manager.call('PATCH', '/api/v1/admin/menu/not-an-id', { body: { featured: true } })).status, 404);
   assert.equal((await clients.manager.call('PATCH', '/api/v1/admin/menu/%7B%22%24ne%22%3Anull%7D', { body: { featured: true } })).status, 404);
+});
+
+test('the dashboard summary covers the last seven days and what needs attention', { skip }, async () => {
+  const res = await clients.manager.call('GET', '/api/v1/admin/summary');
+  assert.equal(res.status, 200);
+  assert.equal(res.json.last7.length, 7);
+  assert.equal(res.json.last7.at(-1).date, res.json.date);
+  assert.ok(Array.isArray(res.json.topDishes));
+  assert.equal(typeof res.json.attention.pendingReviews, 'number');
+  assert.equal((await clients.kitchen.call('GET', '/api/v1/admin/summary')).status, 403); // revenue is not for floor staff
 });
