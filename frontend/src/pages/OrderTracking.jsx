@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { api, formatDateTime, formatLkr } from '../lib/api.js';
+import '../styles/checkout.css';
 
 const STEPS = ['placed', 'confirmed', 'preparing', 'ready', 'completed'];
 
@@ -22,21 +23,26 @@ export default function OrderTracking() {
 
   const reached = STEPS.indexOf(order.status);
   return (
-    <section className="page container narrow">
-      <h1>Thank you{order.firstName ? `, ${order.firstName}` : ''}</h1>
-      <p>Your order reference is <strong>{order.reference}</strong>. Keep it to check progress.</p>
-      <p className="status" role="status">Status: <strong>{order.status.replaceAll('-', ' ')}</strong></p>
+    <section className="container track">
+      <p className="eyebrow">Order received</p>
+      <h1>Thank you{order.firstName ? `, ${order.firstName}` : ''}.</h1>
+      <p style={{ margin: '12px 0 0' }}>Your order reference is</p>
+      <p className="ref" aria-label={`Reference ${order.reference}`}>{order.reference}</p>
+      <p className="muted" style={{ margin: 0 }}>Keep it to check progress. This page refreshes by itself.</p>
+      <p role="status" style={{ margin: '20px 0 0' }}>Status: <span className="tag">{order.status.replaceAll('-', ' ')}</span></p>
       {order.status !== 'cancelled' && (
-        <ol className="steps" aria-label="Order progress">
+        <ol className="stepper" aria-label="Order progress">
           {STEPS.map((s, i) => <li key={s} className={i <= reached ? 'done' : ''} aria-current={i === reached ? 'step' : undefined}>{s}</li>)}
         </ol>
       )}
-      <ul className="lines">
-        {order.lines.map((l, i) => <li key={i}><span>{l.quantity} × {l.name}</span><span>{formatLkr(l.lineTotalCents)}</span></li>)}
-      </ul>
-      {order.totals.deliveryFeeCents > 0 && <p>Delivery {formatLkr(order.totals.deliveryFeeCents)}</p>}
-      <p className="price">Total {formatLkr(order.totals.totalCents)}</p>
-      <p className="muted">Placed {formatDateTime(order.createdAt)} · pay by {order.payment.method === 'cash-delivery' ? 'cash on delivery' : 'cash at pickup'}</p>
+      <div className="panel">
+        <ul className="rows">
+          {order.lines.map((l, i) => <li key={i}><span>{l.quantity} × {l.name}</span><span>{formatLkr(l.lineTotalCents)}</span></li>)}
+          {order.totals.deliveryFeeCents > 0 && <li><span>Delivery</span><span>{formatLkr(order.totals.deliveryFeeCents)}</span></li>}
+        </ul>
+        <p className="tot"><span>Total</span><span>{formatLkr(order.totals.totalCents)}</span></p>
+        <p className="muted" style={{ margin: '12px 0 0', fontSize: 14 }}>Placed {formatDateTime(order.createdAt)} · pay by {order.payment.method === 'cash-delivery' ? 'cash on delivery' : 'cash at pickup'}</p>
+      </div>
     </section>
   );
 }
