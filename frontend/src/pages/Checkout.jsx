@@ -110,7 +110,7 @@ export default function Checkout() {
               <h2>Delivery address</h2>
               <div className="form-grid">
                 <div className="full"><Field label="Street address" value={form.line1} onChange={set('line1')} autoComplete="street-address" required maxLength={150} error={fieldError(error, 'delivery.line1')} /></div>
-                <Field label="Apartment, building or unit" value={form.unit} onChange={set('unit')} maxLength={60} />
+                <Field label="Apartment, building or unit" value={form.unit} onChange={set("unit")} maxLength={50} />
                 <Field label="Delivery zone" as="select" value={form.zone} onChange={set('zone')}>{ZONES.map((z) => <option key={z}>{z}</option>)}</Field>
                 <div className="full"><Field label="Landmark" value={form.landmark} onChange={set('landmark')} maxLength={100} /></div>
               </div>
