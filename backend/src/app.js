@@ -7,6 +7,8 @@ import { securityHeaders, corsPolicy, originGuard } from './middleware/security.
 import { apiLimiter } from './middleware/rateLimit.js';
 import { rejectOperatorKeys } from './middleware/sanitize.js';
 import { loadUser } from './middleware/auth.js';
+import { loadEnv } from './config/env.js';
+import { connectDb } from './config/db.js';
 
 const DEFAULT_STATIC_DIR = fileURLToPath(new URL('../../frontend/dist', import.meta.url));
 
@@ -33,4 +35,22 @@ export function createApp({ env, staticDir = env.NODE_ENV === 'production' ? DEF
   app.use(notFound);
   app.use(errorHandler);
   return app;
+}
+
+// Vercel entry (it looks for src/app.js with a default export). The website is a separate service, so no static files here.
+let vercelApp, db;
+export default async function handler(req, res) {
+  try {
+    const env = loadEnv();
+    vercelApp ??= createApp({ env, staticDir: null });
+    // Connect once per warm instance; a failed attempt is retried on the next request.
+    db ??= connectDb(env.MONGODB_URI).catch((e) => { db = null; throw e; });
+    await db;
+  } catch (e) {
+    console.error(e);
+    return res.status(503).json({ error: 'Service unavailable' });
+  }
+  // shortcut: the service may strip the /api prefix, so put it back; drop this once confirmed it is kept.
+  if (!req.url.startsWith('/api')) req.url = `/api${req.url}`;
+  return vercelApp(req, res);
 }
