@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../lib/auth.jsx';
 import { Field, FormError, fieldError } from '../components/Form.jsx';
+import '../styles/account.css';
 
 export default function Register() {
   const { register } = useAuth();
@@ -25,8 +26,10 @@ export default function Register() {
   }
 
   return (
-    <section className="page container narrow">
-      <h1>Create an account</h1>
+    <section className="auth-card">
+      <p className="eyebrow">Join us</p>
+      <h1>Create account</h1>
+      <div className="panel">
       <form onSubmit={submit} noValidate>
         <FormError error={error} />
         <Field label="Your name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} autoComplete="name" required maxLength={80} error={fieldError(error, 'name')} />
@@ -35,7 +38,8 @@ export default function Register() {
         <label className="check"><input type="checkbox" checked={form.marketingConsent} onChange={(e) => setForm({ ...form, marketingConsent: e.target.checked })} /> Send me offers and news (optional)</label>
         <button className="btn btn-primary" disabled={busy}>{busy ? 'Creating…' : 'Create account'}</button>
       </form>
-      <p>Already have an account? <Link to="/login">Sign in</Link></p>
+      </div>
+      <p className="alt">Already have an account? <Link to="/login" className="link">Sign in</Link></p>
     </section>
   );
 }
