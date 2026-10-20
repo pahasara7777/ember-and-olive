@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import mongoose from 'mongoose';
 import { z } from 'zod';
-import { BlogPost, CateringEnquiry, GalleryImage, Order, Review } from '../models/index.js';
+import { BlogPost, CateringEnquiry, ContactMessage, GalleryImage, Order, Review } from '../models/index.js';
 import { HttpError } from '../middleware/error.js';
 import { requireAuth } from '../middleware/auth.js';
 import { formLimiter } from '../middleware/rateLimit.js';
@@ -65,6 +65,18 @@ const cateringBody = z.strictObject({
 router.post('/catering-enquiries', formLimiter({ limit: 10 }), async (req, res) => {
   const body = cateringBody.parse(req.body);
   await CateringEnquiry.create({ ...body, eventDate: body.eventDate && new Date(body.eventDate) });
+  res.status(201).json({ ok: true });
+});
+
+const contactBody = z.strictObject({
+  name: plain(80),
+  email,
+  subject: z.enum(['General question', 'Reservation help', 'Online order', 'Feedback', 'Careers']),
+  message: plain(2000)
+});
+
+router.post('/contact-messages', formLimiter({ limit: 10 }), async (req, res) => {
+  await ContactMessage.create(contactBody.parse(req.body));
   res.status(201).json({ ok: true });
 });
 

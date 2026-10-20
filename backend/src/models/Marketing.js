@@ -100,6 +100,17 @@ const cateringEnquirySchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+const contactMessageSchema = new mongoose.Schema(
+  {
+    name: { type: String, required: true },
+    email: { type: String, required: true },
+    subject: { type: String, enum: ['General question', 'Reservation help', 'Online order', 'Feedback', 'Careers'], required: true },
+    message: { type: String, required: true },
+    status: { type: String, enum: ['new', 'handled'], default: 'new' }
+  },
+  { timestamps: true }
+);
+
 const auditLogSchema = new mongoose.Schema(
   {
     actor: { type: ObjectId, ref: 'User' },
@@ -119,4 +130,5 @@ export const Review = mongoose.model('Review', reviewSchema);
 export const GalleryImage = mongoose.model('GalleryImage', galleryImageSchema);
 export const BlogPost = mongoose.model('BlogPost', blogPostSchema);
 export const CateringEnquiry = mongoose.model('CateringEnquiry', cateringEnquirySchema);
+export const ContactMessage = mongoose.model('ContactMessage', contactMessageSchema);
 export const AuditLog = mongoose.model('AuditLog', auditLogSchema);
