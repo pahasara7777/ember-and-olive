@@ -1,24 +1,9 @@
 // Plain information pages. Details here are sample content from the brief and need the owner's approval.
 const Page = ({ title, children }) => (
-  <section className="page container narrow">
+  <section className="page container" style={{ maxWidth: 760 }}>
     <h1>{title}</h1>
     {children}
   </section>
-);
-
-export const About = () => (
-  <Page title="About Us">
-    <p>The Ember &amp; Olive is a neighbourhood Mediterranean restaurant in Colombo 07. We cook over charcoal, buy what is in season and keep the menu honest.</p>
-    <p>Come for a long lunch, a quiet dinner, or a table full of friends.</p>
-  </Page>
-);
-
-export const Contact = () => (
-  <Page title="Contact">
-    <p>42 Gregory's Road, Colombo 07</p>
-    <p>Open Tuesday to Sunday. Lunch 12:00 to 15:00, dinner 18:00 to 22:30. Closed Mondays.</p>
-    <p>For bookings use <a href="/reservations">online reservations</a>. For events and catering use <a href="/events-catering">our enquiry form</a>.</p>
-  </Page>
 );
 
 export const Privacy = () => (

@@ -144,3 +144,4 @@ small { color: var(--muted); }
 .table .actions, .table .inline { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .table input, .table select { min-height: 36px; padding: 4px 10px; font-size: 14px; max-width: 150px; }
 .scroll-x { overflow-x: auto; }
+.search { border-radius: 999px; padding: 0 22px; }
