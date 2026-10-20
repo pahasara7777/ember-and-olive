@@ -35,7 +35,7 @@ export function CartProvider({ children }) {
         setLines((cur) => {
           const found = cur.find((l) => l.id === item._id);
           if (found) return cur.map((l) => (l.id === item._id ? { ...l, quantity: Math.min(l.quantity + 1, 20) } : l));
-          return [...cur, { id: item._id, name: item.name, priceCents: item.priceCents, quantity: 1 }];
+          return [...cur, { id: item._id, name: item.name, slug: item.slug, priceCents: item.priceCents, quantity: 1 }];
         }),
       setQuantity: (id, quantity) => setLines((cur) => (quantity < 1 ? cur.filter((l) => l.id !== id) : cur.map((l) => (l.id === id ? { ...l, quantity: Math.min(quantity, 20) } : l)))),
       clear: () => setLines([])
