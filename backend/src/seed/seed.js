@@ -3,7 +3,8 @@
 import 'dotenv/config';
 import mongoose from 'mongoose';
 import { connectDb } from '../config/db.js';
-import { MenuCategory, MenuItem, DiningTable } from '../models/index.js';
+import { MenuCategory, MenuItem, DiningTable, GalleryImage, BlogPost } from '../models/index.js';
+import { galleryImages, blogPosts } from './content.js';
 
 const slug = (s) => s.toLowerCase().replace(/&/g, 'and').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 const lkr = (n) => n * 100; // store money as cents
@@ -39,7 +40,7 @@ const tables = [
 ];
 
 await connectDb();
-await Promise.all([MenuCategory.deleteMany({}), MenuItem.deleteMany({}), DiningTable.deleteMany({})]);
+await Promise.all([MenuCategory.deleteMany({}), MenuItem.deleteMany({}), DiningTable.deleteMany({}), GalleryImage.deleteMany({}), BlogPost.deleteMany({})]);
 
 const cats = await MenuCategory.insertMany(categories.map((name, i) => ({ name, slug: slug(name), sortOrder: i })));
 const catId = Object.fromEntries(cats.map((c) => [c.name, c._id]));
@@ -52,7 +53,9 @@ await MenuItem.insertMany(
   }))
 );
 await DiningTable.insertMany(tables);
+await GalleryImage.insertMany(galleryImages);
+await BlogPost.insertMany(blogPosts.map(({ cover, ...p }) => ({ ...p, status: 'published', coverImage: { url: `/img/${cover[0]}.jpg`, alt: cover[1] } })));
 
 const seats = tables.reduce((s, t) => s + t.seats, 0);
-console.log(`Seeded ${cats.length} categories, ${dishes.length} dishes, ${tables.length} tables (${seats} seats).`);
+console.log(`Seeded ${cats.length} categories, ${dishes.length} dishes, ${tables.length} tables (${seats} seats), ${galleryImages.length} photos, ${blogPosts.length} articles.`);
 await mongoose.disconnect();
