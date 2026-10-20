@@ -38,13 +38,13 @@ export default function App() {
         <Route path="login" element={<Login />} />
         <Route path="register" element={<Register />} />
         <Route path="account" element={<RequireAuth><Account /></RequireAuth>} />
-        <Route path="admin" element={<RequireStaff><Admin /></RequireStaff>} />
         <Route path="privacy" element={<Privacy />} />
         <Route path="terms" element={<Terms />} />
         <Route path="blog" element={<Blog />} />
         <Route path="blog/:slug" element={<BlogPost />} />
         <Route path="*" element={<NotFound />} />
       </Route>
+      <Route path="admin" element={<RequireStaff><Admin /></RequireStaff>} />
     </Routes>
   );
 }
