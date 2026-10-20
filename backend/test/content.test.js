@@ -2,7 +2,7 @@ import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { startApp } from './helpers.js';
 import { HAS_DB, connectTestDb, disconnectTestDb } from './db.js';
-import { BlogPost, CateringEnquiry, GalleryImage, Review } from '../src/models/index.js';
+import { BlogPost, CateringEnquiry, ContactMessage, GalleryImage, Review } from '../src/models/index.js';
 
 const skip = !HAS_DB && 'set MONGODB_TEST_URI to run database tests';
 let app, member;
@@ -58,4 +58,12 @@ test('catering enquiries are validated and stored clean', { skip }, async () => 
   assert.equal((await CateringEnquiry.findOne({ email: 'events@corp.example' })).requirements, 'Vegetarian menu');
   assert.equal((await app.call('POST', '/api/v1/catering-enquiries', { body: { ...ok, eventType: 'wedding' } })).status, 400);
   assert.equal((await app.call('POST', '/api/v1/catering-enquiries', { body: { ...ok, status: 'confirmed' } })).status, 400);
+});
+
+test('contact messages are validated and stored clean', { skip }, async () => {
+  const ok = { name: 'Asha', email: 'asha@example.com', subject: 'Feedback', message: '<b>Lovely</b> evening' };
+  assert.equal((await app.call('POST', '/api/v1/contact-messages', { body: ok })).status, 201);
+  assert.equal((await ContactMessage.findOne({ email: 'asha@example.com' })).message, 'Lovely evening');
+  assert.equal((await app.call('POST', '/api/v1/contact-messages', { body: { ...ok, subject: 'Spam' } })).status, 400);
+  assert.equal((await app.call('POST', '/api/v1/contact-messages', { body: { ...ok, status: 'handled' } })).status, 400);
 });
