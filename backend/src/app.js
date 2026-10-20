@@ -48,7 +48,9 @@ export default async function handler(req, res) {
     await db;
   } catch (e) {
     console.error(e);
-    return res.status(503).json({ error: 'Service unavailable' });
+    res.statusCode = 503; // plain Node response here, not Express's
+    res.setHeader('Content-Type', 'application/json');
+    return res.end('{"error":"Service unavailable"}');
   }
   // shortcut: the service may strip the /api prefix, so put it back; drop this once confirmed it is kept.
   if (!req.url.startsWith('/api')) req.url = `/api${req.url}`;
