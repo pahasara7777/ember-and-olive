@@ -1,0 +1,31 @@
+.acct { display: flex; flex-wrap: wrap; gap: 36px; align-items: flex-start; padding-block: 48px 90px; }
+.acct-side { flex: 0 1 260px; min-width: 220px; }
+.who { display: flex; align-items: center; gap: 14px; margin-bottom: 24px; }
+.avatar { width: 56px; height: 56px; border-radius: 50%; background: var(--button); color: #fff; display: flex; align-items: center; justify-content: center; font: 600 20px var(--font-body); flex: none; }
+.who p { margin: 0; }
+.who .nm { font-weight: 600; overflow-wrap: anywhere; }
+.who .em { font-size: 13px; color: var(--muted); overflow-wrap: anywhere; }
+.side-nav { display: flex; flex-direction: column; gap: 4px; }
+.side { display: block; min-height: 44px; padding: 10px 16px; border-radius: 12px; font-weight: 500; font-size: 15px; background: none; border: none; text-align: left; cursor: pointer; color: var(--charcoal); font-family: var(--font-body); }
+.side[aria-current='page'] { background: var(--olive); color: var(--linen); }
+.side.out { color: var(--rust-text); }
+.acct-main { flex: 999 1 640px; min-width: 0; display: flex; flex-direction: column; gap: 24px; }
+.acct-main h1 { font-size: clamp(40px, 6vw, 56px); line-height: 1; }
+.cards { display: flex; flex-wrap: wrap; gap: 24px; }
+.cards > * { flex: 1 1 300px; }
+.a-card { background: var(--card); border: 1px solid var(--line); border-radius: 24px; padding: 32px; }
+.a-card h2 { font-size: 30px; }
+.a-card .k { margin: 0; font: 600 13px var(--font-body); letter-spacing: 0.12em; text-transform: uppercase; color: var(--rust-text); }
+.a-card.dark { background: var(--olive); color: var(--linen); border: none; }
+.a-card.dark .k { color: #f3c9a9; }
+.a-card.dark h2 { color: var(--linen); }
+.a-card .big { font: 500 32px/1.1 var(--font-display); color: var(--olive); margin: 8px 0 4px; }
+.status { display: inline-block; padding: 3px 10px; border-radius: 999px; font: 600 12px var(--font-body); background: #e6e2d6; color: var(--ink-2); text-transform: capitalize; }
+.status.ok { background: #dcebdd; color: #1f4a2b; }
+.status.info { background: #dce6f0; color: #1e3a56; }
+.status.bad { background: #f3dcdc; color: #6b1d1d; }
+.btn-danger { color: var(--rust-text); border-color: #d9cfb8; background: transparent; }
+.auth-card { max-width: 480px; margin: 0 auto; padding: 64px var(--gutter) 90px; }
+.auth-card .panel { padding: 36px; }
+.auth-card h1 { font-size: clamp(40px, 6vw, 56px); margin-bottom: 8px; }
+.auth-card p.alt { margin: 20px 0 0; }
