@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import mongoose from 'mongoose';
 import { z } from 'zod';
-import { AuditLog, CateringEnquiry, MenuItem, Order, Reservation, Review, User, ORDER_STATUSES, ROLES } from '../models/index.js';
+import { AuditLog, CateringEnquiry, ContactMessage, MenuItem, Order, Reservation, Review, User, ORDER_STATUSES, ROLES } from '../models/index.js';
 import { HttpError } from '../middleware/error.js';
 import { ANY_STAFF, STAFF, requireRole } from '../middleware/auth.js';
 import { audit } from '../lib/audit.js';
@@ -145,6 +145,18 @@ router.patch('/enquiries/:id', MARKETING, async (req, res) => {
   Object.assign(enquiry, body);
   await enquiry.save();
   res.json({ enquiry });
+});
+
+router.get('/messages', MARKETING, async (req, res) => {
+  res.json({ messages: await ContactMessage.find().sort('-createdAt').limit(100).lean() });
+});
+
+router.patch('/messages/:id', MARKETING, async (req, res) => {
+  const body = z.strictObject({ status: z.enum(['new', 'handled']) }).parse(req.body);
+  const message = await byId(ContactMessage, req.params.id);
+  message.status = body.status;
+  await message.save();
+  res.json({ message });
 });
 
 // ---- People and audit trail: owner only ----
