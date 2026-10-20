@@ -1,9 +1,16 @@
 import { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { api, formatLkr } from '../lib/api.js';
 import { useCart } from '../lib/cart.jsx';
 import { useAuth } from '../lib/auth.jsx';
+import { dishPhoto } from '../lib/images.js';
 import { Field, FormError, fieldError } from '../components/Form.jsx';
+import '../styles/checkout.css';
+
+// Mirrors the server's rules for display only; the server prices every order again.
+const DELIVERY_FEE = 35000;
+const DELIVERY_MIN = 200000;
+const ZONES = ['Colombo 07', 'Colombo 05 / 06', 'Other (check coverage)'];
 
 export default function Checkout() {
   const cart = useCart();
@@ -11,27 +18,43 @@ export default function Checkout() {
   const navigate = useNavigate();
   // One key per checkout attempt: pressing the button twice cannot place two orders.
   const idempotencyKey = useMemo(() => crypto.randomUUID().replaceAll('-', ''), []);
-  const [form, setForm] = useState({ name: user?.name ?? '', email: user?.email ?? '', phone: user?.phone ?? '', fulfillment: 'pickup', line1: '', landmark: '', instructions: '', notes: '' });
+  const [form, setForm] = useState({ name: user?.name ?? '', email: user?.email ?? '', phone: user?.phone ?? '', line1: '', unit: '', zone: ZONES[0], landmark: '', notes: '', when: 'asap', at: '' });
+  const [agree, setAgree] = useState(false);
   const [error, setError] = useState(null);
   const [busy, setBusy] = useState(false);
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
+  const delivery = cart.fulfilment === 'delivery';
 
-  if (cart.lines.length === 0) return <section className="page container"><h1>Checkout</h1><p>Your cart is empty.</p></section>;
+  if (cart.lines.length === 0) {
+    return (
+      <section className="container page">
+        <h1>Checkout</h1>
+        <p>Your order is empty.</p>
+        <Link to="/menu" className="btn btn-primary">Browse the menu</Link>
+      </section>
+    );
+  }
+
+  const fee = delivery ? DELIVERY_FEE : 0;
+  const total = cart.subtotalCents + fee;
+  const belowMin = delivery && cart.subtotalCents < DELIVERY_MIN;
 
   async function submit(e) {
     e.preventDefault();
+    if (!agree) return setError({ message: 'Please accept the purchase terms and cancellation policy.' });
     setBusy(true);
     setError(null);
-    const delivery = form.fulfillment === 'delivery' ? { recipientName: form.name, line1: form.line1, landmark: form.landmark || undefined, instructions: form.instructions || undefined } : undefined;
     try {
       const { order } = await api('/orders', {
         method: 'POST',
         body: {
           idempotencyKey,
           customer: { name: form.name, email: form.email, phone: form.phone },
-          fulfillment: form.fulfillment,
-          paymentMethod: form.fulfillment === 'delivery' ? 'cash-delivery' : 'cash-pickup',
-          delivery,
+          fulfillment: cart.fulfilment,
+          paymentMethod: delivery ? 'cash-delivery' : 'cash-pickup',
+          // Times are entered as Colombo time (UTC+05:30) and sent as UTC.
+          scheduledFor: form.when === 'later' && form.at ? new Date(`${form.at}:00+05:30`).toISOString() : undefined,
+          delivery: delivery ? { recipientName: form.name, line1: form.line1, unit: form.unit || undefined, zone: form.zone, landmark: form.landmark || undefined } : undefined,
           notes: form.notes || undefined,
           lines: cart.lines.map((l) => ({ menuItem: l.id, quantity: l.quantity }))
         }
@@ -46,29 +69,106 @@ export default function Checkout() {
   }
 
   return (
-    <section className="page container narrow">
-      <h1>Checkout</h1>
-      <p className="muted">{cart.count} item(s) · {formatLkr(cart.subtotalCents)} before delivery. Payment is cash on {form.fulfillment === 'delivery' ? 'delivery' : 'pickup'}.</p>
-      <form onSubmit={submit} noValidate>
-        <FormError error={error} />
-        <fieldset>
-          <legend>How would you like it?</legend>
-          <label><input type="radio" name="fulfillment" value="pickup" checked={form.fulfillment === 'pickup'} onChange={set('fulfillment')} /> Pickup</label>
-          <label><input type="radio" name="fulfillment" value="delivery" checked={form.fulfillment === 'delivery'} onChange={set('fulfillment')} /> Delivery (LKR 350, minimum LKR 2,000)</label>
-        </fieldset>
-        <Field label="Your name" value={form.name} onChange={set('name')} autoComplete="name" required maxLength={80} error={fieldError(error, 'customer.name')} />
-        <Field label="Email" type="email" value={form.email} onChange={set('email')} autoComplete="email" required error={fieldError(error, 'customer.email')} />
-        <Field label="Phone" type="tel" value={form.phone} onChange={set('phone')} autoComplete="tel" required error={fieldError(error, 'customer.phone')} />
-        {form.fulfillment === 'delivery' && (
-          <>
-            <Field label="Delivery address" value={form.line1} onChange={set('line1')} autoComplete="street-address" required maxLength={150} error={fieldError(error, 'delivery.line1')} />
-            <Field label="Landmark (optional)" value={form.landmark} onChange={set('landmark')} maxLength={100} />
-            <Field label="Instructions for the rider (optional)" value={form.instructions} onChange={set('instructions')} maxLength={200} />
-          </>
-        )}
-        <Field label="Notes for the kitchen (optional)" as="textarea" rows={3} value={form.notes} onChange={set('notes')} maxLength={300} hint="Allergies matter: tell us here and call us to confirm." />
-        <button className="btn btn-primary" disabled={busy}>{busy ? 'Placing order…' : 'Place order'}</button>
-      </form>
+    <section className="container">
+      <div className="checkout-head">
+        <h1>Checkout</h1>
+        <ol className="progress" aria-label="Checkout steps">
+          <li className="on">1 · Order</li><li className="on">2 · Your details</li><li>3 · Payment</li><li>4 · Confirmation</li>
+        </ol>
+      </div>
+      <div className="co-layout">
+        <form className="co-form" onSubmit={submit} noValidate id="checkout-form">
+          <FormError error={error} />
+          <fieldset>
+            <legend>Fulfilment</legend>
+            <div className="opt-grid">
+              <label className="opt"><input type="radio" name="ful" checked={!delivery} onChange={() => cart.setFulfilment('pickup')} /><span><b>Pickup</b><span>Free · ready in about 25 minutes</span></span></label>
+              <label className="opt"><input type="radio" name="ful" checked={delivery} onChange={() => cart.setFulfilment('delivery')} /><span><b>Delivery</b><span>LKR 350 · minimum order LKR 2,000</span></span></label>
+            </div>
+            <div className="field" style={{ marginTop: 18, maxWidth: 360 }}>
+              <label htmlFor="c-when">Time</label>
+              <select id="c-when" value={form.when} onChange={set('when')}>
+                <option value="asap">As soon as possible</option>
+                <option value="later">Schedule for later (30+ minutes ahead)</option>
+              </select>
+              {form.when === 'later' && <input type="datetime-local" aria-label="Scheduled time (Colombo)" value={form.at} onChange={set('at')} required />}
+            </div>
+          </fieldset>
+
+          <div>
+            <h2>Your details</h2>
+            <div className="form-grid">
+              <Field label="Full name" value={form.name} onChange={set('name')} autoComplete="name" required maxLength={80} error={fieldError(error, 'customer.name')} />
+              <Field label="Mobile number" type="tel" placeholder="+94" value={form.phone} onChange={set('phone')} autoComplete="tel" required error={fieldError(error, 'customer.phone')} />
+              <div className="full"><Field label="Email address (for your receipt)" type="email" value={form.email} onChange={set('email')} autoComplete="email" required error={fieldError(error, 'customer.email')} /></div>
+            </div>
+            {!user && <p className="muted" style={{ fontSize: 14, margin: '12px 0 0' }}>Ordering as a guest. <Link to="/login" className="link">Sign in</Link> to see your order history.</p>}
+          </div>
+
+          {delivery && (
+            <div>
+              <h2>Delivery address</h2>
+              <div className="form-grid">
+                <div className="full"><Field label="Street address" value={form.line1} onChange={set('line1')} autoComplete="street-address" required maxLength={150} error={fieldError(error, 'delivery.line1')} /></div>
+                <Field label="Apartment, building or unit" value={form.unit} onChange={set('unit')} maxLength={60} />
+                <Field label="Delivery zone" as="select" value={form.zone} onChange={set('zone')}>{ZONES.map((z) => <option key={z}>{z}</option>)}</Field>
+                <div className="full"><Field label="Landmark" value={form.landmark} onChange={set('landmark')} maxLength={100} /></div>
+              </div>
+              <p className="hint-box" style={{ marginTop: 12 }}>Outside our delivery zones? We will explain, and you can switch to pickup without losing your cart.</p>
+              {belowMin && <p role="alert" className="alert" style={{ marginTop: 12 }}>Delivery needs a minimum order of LKR 2,000. Add a dish or switch to pickup.</p>}
+            </div>
+          )}
+
+          <fieldset>
+            <legend>Payment</legend>
+            <div className="stack">
+              <label className="opt"><input type="radio" name="pay" disabled /><span><b>Card, paid securely online</b><span>Coming soon. Card payments are not switched on yet.</span></span></label>
+              <label className="opt"><input type="radio" name="pay" checked readOnly /><span><b>Cash on {delivery ? 'delivery' : 'pickup'}</b><span>Pay the restaurant {delivery ? 'rider' : 'team'} when you receive your order</span></span></label>
+            </div>
+            <div className="field" style={{ marginTop: 18 }}>
+              <label htmlFor="c-notes">Notes for the kitchen (optional)</label>
+              <textarea id="c-notes" rows={3} maxLength={300} value={form.notes} onChange={set('notes')} />
+              <small>Allergies matter: tell us here and call us to confirm.</small>
+            </div>
+            <label className="check" style={{ marginTop: 22 }}>
+              <input type="checkbox" checked={agree} onChange={(e) => setAgree(e.target.checked)} />
+              <span>I accept the <Link to="/terms" className="link">purchase terms</Link> and cancellation policy.</span>
+            </label>
+          </fieldset>
+        </form>
+
+        <aside className="summary" aria-label="Order summary">
+          <h2>Order summary</h2>
+          {cart.lines.map((l) => (
+            <div key={l.id} className="sum-line">
+              {dishPhoto(l.slug) ? <img src={dishPhoto(l.slug)} alt="" /> : <div className="plate" aria-hidden="true" />}
+              <div className="info">
+                <p className="nm">{l.name}</p>
+                <span className="qty">
+                  <button type="button" aria-label={`Remove one ${l.name}`} onClick={() => cart.setQuantity(l.id, l.quantity - 1)}>−</button>
+                  <output aria-label={`${l.name} quantity`}>{l.quantity}</output>
+                  <button type="button" aria-label={`Add one ${l.name}`} onClick={() => cart.setQuantity(l.id, l.quantity + 1)}>+</button>
+                </span>
+              </div>
+              <span style={{ fontWeight: 500 }}>{formatLkr(l.priceCents * l.quantity)}</span>
+            </div>
+          ))}
+          <div className="coupon-row">
+            <label htmlFor="c-coupon" className="sr-only">Coupon code</label>
+            <input id="c-coupon" type="text" placeholder="Coupon code" disabled />
+            <button type="button" className="btn btn-outline" disabled>Apply</button>
+          </div>
+          <p className="muted" style={{ margin: 0, fontSize: 13 }}>Coupons are not live yet.</p>
+          <dl className="totals">
+            <dt>Items subtotal</dt><dd>{formatLkr(cart.subtotalCents)}</dd>
+            <dt>{delivery ? 'Delivery' : 'Pickup'}</dt><dd>{formatLkr(fee)}</dd>
+            <dt>Service charge</dt><dd>{formatLkr(0)}</dd>
+            <dt className="grand">Total</dt><dd className="grand">{formatLkr(total)}</dd>
+          </dl>
+          <p className="fine">Prices are recalculated by our server when you place the order.</p>
+          <button type="submit" form="checkout-form" className="btn btn-primary block" disabled={busy || belowMin}>{busy ? 'Placing order…' : `Place order · ${formatLkr(total)}`}</button>
+        </aside>
+      </div>
     </section>
   );
 }
