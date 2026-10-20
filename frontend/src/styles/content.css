@@ -37,7 +37,7 @@
 .mosaic li:nth-child(8) { grid-column: span 2; }
 .tile { position: relative; border-radius: 16px; overflow: hidden; margin: 0; padding: 0; border: none; cursor: zoom-in; display: block; width: 100%; height: 100%; background: #ddd3bd; }
 .tile img { width: 100%; height: 100%; object-fit: cover; }
-.cap { position: absolute; left: 12px; bottom: 12px; background: rgba(38, 59, 45, 0.88); color: var(--linen); font: 500 13px var(--font-body); padding: 6px 12px; border-radius: 999px; }
+.cap { position: absolute; left: 12px; bottom: 12px; background: rgba(17, 17, 17, 0.88); color: var(--linen); font: 500 13px var(--font-body); padding: 6px 12px; border-radius: 999px; }
 .lightbox { position: fixed; inset: 0; z-index: 100; background: rgba(20, 22, 18, 0.94); display: flex; align-items: center; justify-content: center; gap: 20px; padding: 24px; color: var(--linen); }
 .lightbox figure { flex: 1; margin: 0; max-width: 960px; }
 .lightbox img { width: 100%; max-height: 72vh; object-fit: contain; border-radius: 14px; }

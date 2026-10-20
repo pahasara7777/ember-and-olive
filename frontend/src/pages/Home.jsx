@@ -59,51 +59,57 @@ export default function Home() {
         {heroVideo && <video className="hero-video" src="/hero.mp4" poster={photo('prawns-grill')} autoPlay muted loop playsInline aria-hidden="true" tabIndex={-1} />}
         <div className="container">
           <div className="hero-copy">
-            <p className="eyebrow">Contemporary Mediterranean · Colombo 07</p>
-            <h1>Fire-Kissed Flavours. Mediterranean Soul.</h1>
-            <p>A neighbourhood table for honest food, good wine, and memorable evenings in Colombo.</p>
+            <p className="eyebrow script">Welcome to The Ember &amp; Olive</p>
+            <h1>Good Food,<br />Good <span className="script">Mood</span></h1>
+            <p>Fire-kissed flavours and Mediterranean soul. A neighbourhood table for honest food, good wine, and memorable evenings in Colombo 07.</p>
             <div className="btn-row">
-              <Link to="/reservations" className="btn btn-primary">Reserve a Table</Link>
-              <Link to="/menu" className="btn btn-light">Explore Our Menu</Link>
+              <Link to="/menu" className="btn btn-primary">Explore Our Menu →</Link>
+              <Link to="/about" className="btn btn-light">▷ Watch Our Story</Link>
             </div>
           </div>
           <div className="hero-art">
             <div className="ring peach"><img src={photo('prawns-grill')} alt="Garlic prawns sizzling in a dark cast-iron pan" /></div>
+            <ul className="hero-info" aria-label="At a glance">
+              <li><h2 className={status.open ? 'is-open' : ''}>{status.open ? 'Open now' : 'Closed now'}</h2><p>{status.text}</p></li>
+              <li><h2>Location</h2><p>42 Gregory's Road, Colombo 07</p></li>
+              <li><h2>Pickup &amp; delivery</h2><p>Colombo 07 and nearby zones</p></li>
+            </ul>
           </div>
         </div>
       </section>
 
-      <section className="container info-card" aria-label="At a glance">
+      <section className="container info-card" aria-label="Why guests choose us">
         <div className="inner">
-          <div className="item">
-            <svg {...icon}><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>
-            <div><h2 className={status.open ? 'is-open' : ''}>{status.open ? 'Open now' : 'Closed now'}</h2><p>{status.text}</p></div>
-          </div>
-          <div className="item">
-            <svg {...icon}><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7" /><circle cx="7" cy="18" r="1.6" /><circle cx="17" cy="18" r="1.6" /></svg>
-            <div><h2>Pickup &amp; delivery</h2><p>Colombo 07 and nearby zones</p></div>
-          </div>
-          <div className="item">
-            <svg {...icon}><path d="M4 20V9l8-5 8 5v11zM9 20v-6h6v6" /></svg>
-            <div><h2>Private dining</h2><p>Up to 30 guests, by enquiry</p></div>
-          </div>
+          {[['Fresh Ingredients', 'We use only the freshest, highest quality ingredients.', <path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z" />],
+            ['Expertly Crafted', 'Our chefs craft every dish with precision and love.', <><circle cx="12" cy="13" r="7" /><path d="M12 9v4l3 2M10 3h4" /></>],
+            ['Cozy Ambience', 'A warm and inviting space perfect for any occasion.', <path d="M4 20V9l8-5 8 5v11zM9 20v-6h6v6" />],
+            ['Great Service', 'We prioritize your satisfaction above everything.', <><circle cx="12" cy="8" r="4" /><path d="M4 21c1-4 4-6 8-6s7 2 8 6" /></>]].map(([h, p, d]) => (
+            <div key={h} className="item">
+              <svg {...icon}>{d}</svg>
+              <div><h2>{h}</h2><p>{p}</p></div>
+            </div>
+          ))}
         </div>
       </section>
 
       <section className="container section">
         <div className="section-head">
-          <div><p className="eyebrow">From the grill</p><h2 className="h2">Our Signature Dishes</h2></div>
+          <div><p className="eyebrow">Our menu</p><h2 className="h2">Menu Highlights</h2></div>
           <Link to="/menu" className="btn btn-outline">View full menu</Link>
         </div>
         {error && <p role="alert" className="alert">{error}</p>}
         <ul className="dish-row">
           {featured.map((d) => (
             <li key={d._id} className="dish">
-              <div className="ring">{dishPhoto(d.slug) ? <img src={dishPhoto(d.slug)} alt={d.name} loading="lazy" /> : <div className="plate" role="img" aria-label={d.name} />}</div>
-              <h3>{d.name}</h3>
-              <p className="tags">{tagLine(d)}</p>
-              <p className="price">{formatLkr(d.priceCents)}</p>
-              <button type="button" className="btn btn-primary small" onClick={() => cart.add(d)}>Add to order</button>
+              {dishPhoto(d.slug) ? <img src={dishPhoto(d.slug)} alt={d.name} loading="lazy" /> : <div className="plate" role="img" aria-label={d.name} />}
+              <div className="body">
+                <h3>{d.name}</h3>
+                <p className="tags">{tagLine(d)}</p>
+                <div className="foot">
+                  <p className="price">{formatLkr(d.priceCents)}</p>
+                  <button type="button" className="add" onClick={() => cart.add(d)} aria-label={`Add ${d.name} to order`}>+</button>
+                </div>
+              </div>
             </li>
           ))}
         </ul>
@@ -115,29 +121,50 @@ export default function Home() {
           <Slider label="More dishes" auto={5000}>
             {more.map((d) => (
               <div key={d._id} className="slide dish">
-                <div className="ring"><img src={dishPhoto(d.slug)} alt={d.name} loading="lazy" /></div>
-                <h3>{d.name}</h3>
-                <p className="price">{formatLkr(d.priceCents)}</p>
-                <button type="button" className="btn btn-outline small" onClick={() => cart.add(d)}>Add to order</button>
+                <img src={dishPhoto(d.slug)} alt={d.name} loading="lazy" />
+                <div className="body">
+                  <h3>{d.name}</h3>
+                  <div className="foot">
+                    <p className="price">{formatLkr(d.priceCents)}</p>
+                    <button type="button" className="add" onClick={() => cart.add(d)} aria-label={`Add ${d.name} to order`}>+</button>
+                  </div>
+                </div>
               </div>
             ))}
           </Slider>
         </section>
       )}
 
-      <section className="story">
+      <section className="story on-dark">
         <div className="container">
-          <div className="arch"><img src={photo('chef')} alt="A chef cooking over an open charcoal grill" loading="lazy" /></div>
           <div className="story-copy">
-            <p className="eyebrow">Since 2018</p>
-            <h2 className="h2">Open flame, generous plates, a table to share.</h2>
-            <p>The Ember &amp; Olive began as a small, family-run dining room built around open-flame cooking, fresh ingredients and the relaxed culture of sharing food. Eight years on, we cook charcoal-grilled seafood, slow-braised lamb, handmade pasta and seasonal Sri Lankan ingredients with Mediterranean technique.</p>
-            <div className="stats">
-              <div><p className="n" style={{ '--to': 8 }}><span>8</span></p><p className="l">years serving Colombo</p></div>
-              <div><p className="n" style={{ '--to': 72 }}><span>72</span></p><p className="l">seats in the dining room</p></div>
-              <div><p className="n" style={{ '--to': 30 }}><span>30</span></p><p className="l">guests in private dining</p></div>
+            <p className="eyebrow">Our story</p>
+            <h2 className="h2">More Than Just A Restaurant</h2>
+            <p>The Ember &amp; Olive began as a small, family-run dining room built around open-flame cooking, fresh ingredients and the relaxed culture of sharing food. We cook charcoal-grilled seafood, slow-braised lamb, handmade pasta and seasonal Sri Lankan ingredients with Mediterranean technique.</p>
+            <Link to="/about" className="btn btn-light">Discover Our Story →</Link>
+          </div>
+          <div className="story-pics">
+            <div className="pic"><img src={photo('dining')} alt="A long candlelit dining table" loading="lazy" /><span className="years"><b>8+</b>years of experience</span></div>
+            <div className="pic"><img src={photo('chef')} alt="A chef cooking over an open charcoal grill" loading="lazy" /></div>
+          </div>
+        </div>
+        <div className="container">
+          <div className="stats">
+            <div><p className="n" style={{ '--to': 8 }}><span>8</span></p><p className="l">Years of experience</p></div>
+            <div><p className="n" style={{ '--to': 72 }}><span>72</span></p><p className="l">Seats in the dining room</p></div>
+            <div><p className="n" style={{ '--to': 30 }}><span>30</span></p><p className="l">Guests in private dining</p></div>
+            <div><p className="n static"><span>4.8</span></p><p className="l">Average rating</p></div>
+          </div>
+        </div>
+        <div className="container">
+          <div className="reserve">
+            <div>
+              <p className="eyebrow">Reservation</p>
+              <h2>Book Your Table For A Great Experience</h2>
+              <p>Whether it's a cozy dinner, celebration or business meeting, we've got the perfect table for you.</p>
+              <Link to="/reservations" className="btn btn-primary">Reserve a Table →</Link>
             </div>
-            <Link to="/about" className="btn btn-outline">Read our story</Link>
+            <img src={photo('dining')} alt="" loading="lazy" />
           </div>
         </div>
       </section>

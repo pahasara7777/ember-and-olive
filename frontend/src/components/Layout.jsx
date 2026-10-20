@@ -15,7 +15,7 @@ const nav = [
 const REVEAL = '.page-head, .section-head, .dish, .cat-link, .quote, .cta-pair > *, .story .container > *, .event-band, .social img, .panel, .info-card .item';
 
 const Leaf = () => (
-  <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#263B2D" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+  <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#F47B20" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <path d="M5 19c0-8 5-13 14-14 0 9-5 14-14 14z" /><path d="M5 19c3-4 6-7 10-9" />
   </svg>
 );
