@@ -4,6 +4,14 @@ const CartContext = createContext(null);
 export const useCart = () => useContext(CartContext);
 
 const KEY = 'eo_cart';
+const FUL_KEY = 'eo_fulfilment';
+const loadFul = () => {
+  try {
+    return localStorage.getItem(FUL_KEY) === 'delivery' ? 'delivery' : 'pickup';
+  } catch {
+    return 'pickup';
+  }
+};
 const load = () => {
   try {
     const raw = JSON.parse(localStorage.getItem(KEY));
@@ -17,6 +25,15 @@ const load = () => {
 // the server prices the order again from the database at checkout.
 export function CartProvider({ children }) {
   const [lines, setLines] = useState(load);
+  const [fulfilment, setFulfilmentState] = useState(loadFul);
+  const setFulfilment = (v) => {
+    setFulfilmentState(v);
+    try {
+      localStorage.setItem(FUL_KEY, v);
+    } catch {
+      /* ignore blocked storage */
+    }
+  };
 
   useEffect(() => {
     try {
@@ -29,6 +46,8 @@ export function CartProvider({ children }) {
   const value = useMemo(
     () => ({
       lines,
+      fulfilment,
+      setFulfilment,
       count: lines.reduce((n, l) => n + l.quantity, 0),
       subtotalCents: lines.reduce((n, l) => n + l.priceCents * l.quantity, 0),
       add: (item) =>
@@ -40,7 +59,7 @@ export function CartProvider({ children }) {
       setQuantity: (id, quantity) => setLines((cur) => (quantity < 1 ? cur.filter((l) => l.id !== id) : cur.map((l) => (l.id === id ? { ...l, quantity: Math.min(quantity, 20) } : l)))),
       clear: () => setLines([])
     }),
-    [lines]
+    [lines, fulfilment]
   );
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }
