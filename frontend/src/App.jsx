@@ -13,7 +13,7 @@ import Reviews from './pages/Reviews.jsx';
 import Events from './pages/Events.jsx';
 import Gallery from './pages/Gallery.jsx';
 import Admin from './pages/Admin.jsx';
-import Placeholder from './pages/Placeholder.jsx';
+import NotFound from './pages/NotFound.jsx';
 import About from './pages/About.jsx';
 import Contact from './pages/Contact.jsx';
 import { Blog, BlogPost } from './pages/Blog.jsx';
@@ -43,7 +43,7 @@ export default function App() {
         <Route path="terms" element={<Terms />} />
         <Route path="blog" element={<Blog />} />
         <Route path="blog/:slug" element={<BlogPost />} />
-        <Route path="*" element={<Placeholder title="Page not found" />} />
+        <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>
   );
