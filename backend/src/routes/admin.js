@@ -7,6 +7,8 @@ import { ANY_STAFF, STAFF, requireRole } from '../middleware/auth.js';
 import { audit } from '../lib/audit.js';
 import { optionalPlain, objectId } from '../lib/text.js';
 import { toUtc } from '../lib/booking.js';
+import { priceCart } from '../lib/pricing.js';
+import { newReference } from '../lib/ids.js';
 
 const router = Router();
 const trusted = mongoose.trusted;
@@ -31,7 +33,7 @@ router.get('/summary', requireRole('manager', 'owner'), async (req, res) => {
   const weekStart = new Date(from.getTime() - 6 * 24 * 3600000);
   const [week, reservations, guestRows, pendingReviews, newEnquiries, newMessages, placed, approvals] = await Promise.all([
     Order.find({ createdAt: trusted({ $gte: weekStart, $lt: to }), status: trusted({ $nin: ['cancelled', 'payment-failed'] }) })
-      .select('createdAt totals.totalCents lines.name lines.quantity lines.lineTotalCents')
+      .select('createdAt customer.email totals.totalCents lines.name lines.quantity lines.lineTotalCents')
       .limit(5000)
       .lean(),
     Reservation.countDocuments({ startsAt: trusted({ $gte: from, $lt: to }), status: trusted({ $nin: ['cancelled', 'no-show'] }) }),
@@ -48,7 +50,10 @@ router.get('/summary', requireRole('manager', 'owner'), async (req, res) => {
   const days = Array.from({ length: 7 }, (_, i) => dayKey(new Date(weekStart.getTime() + i * 24 * 3600000)));
   const byDay = Object.fromEntries(days.map((d) => [d, { date: d, orders: 0, revenueCents: 0 }]));
   const dishes = new Map();
+  const perGuest = new Map();
   for (const o of week) {
+    const email = o.customer?.email?.toLowerCase();
+    if (email) perGuest.set(email, (perGuest.get(email) ?? 0) + 1);
     const row = byDay[dayKey(o.createdAt)];
     if (!row) continue;
     row.orders += 1;
@@ -69,6 +74,7 @@ router.get('/summary', requireRole('manager', 'owner'), async (req, res) => {
     reservations,
     guests: guestRows.reduce((n, r) => n + r.partySize, 0),
     last7,
+    repeatRate: perGuest.size ? Math.round(([...perGuest.values()].filter((n) => n > 1).length / perGuest.size) * 100) : null, // % of this week's ordering guests who ordered more than once
     topDishes: [...dishes.values()].sort((a, b) => b.sold - a.sold).slice(0, 5),
     attention: { placedOrders: placed, pendingReviews, newEnquiries, newMessages, approvals }
   });
@@ -103,6 +109,36 @@ router.patch('/orders/:id/status', FLOOR, async (req, res) => {
   await order.save();
   await audit(req, 'order.status', 'Order', order._id, { status: before }, { status: body.status, reason: body.reason });
   res.json({ order });
+});
+
+// ---- POS: staff ring up a walk-in sale. Priced on the server; paid at the counter, so it goes straight to the kitchen. ----
+const posBody = z.strictObject({
+  fulfillment: z.enum(['dine-in', 'pickup']),
+  table: optionalPlain(20),
+  paymentMethod: z.enum(['cash', 'card']), // card = the shop's own card terminal; no gateway involved
+  notes: optionalPlain(300),
+  lines: z.array(z.strictObject({ menuItem: objectId, quantity: z.number().int().min(1).max(20), options: z.array(objectId).max(10).optional(), notes: optionalPlain(200) })).min(1).max(40)
+});
+
+router.post('/pos/orders', FLOOR, async (req, res) => {
+  const body = posBody.parse(req.body);
+  const ids = [...new Set(body.lines.map((l) => l.menuItem))];
+  const items = await MenuItem.find({ _id: trusted({ $in: ids }) }); // ids validated as ObjectIds above
+  const priced = priceCart(new Map(items.map((i) => [String(i._id), i])), body.lines, body.fulfillment);
+  const order = await Order.create({
+    reference: newReference('O'),
+    user: req.user._id,
+    customer: { name: body.table ? `Table ${body.table}` : 'Walk-in' },
+    fulfillment: body.fulfillment,
+    table: body.table,
+    ...priced,
+    payment: { method: body.paymentMethod, status: 'paid', amountCents: priced.totals.totalCents },
+    status: 'confirmed',
+    statusHistory: [{ status: 'confirmed', at: new Date(), by: req.user._id }],
+    notes: body.notes
+  });
+  await audit(req, 'order.pos', 'Order', order._id, null, { total: priced.totals.totalCents, method: body.paymentMethod });
+  res.status(201).json({ order });
 });
 
 // ---- Reservations: host, manager, owner ----

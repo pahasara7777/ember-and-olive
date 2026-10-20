@@ -15,7 +15,11 @@ export function AuthProvider({ children }) {
       .finally(() => setLoading(false));
   }, []);
 
-  const login = useCallback(async (body) => setUser((await api('/auth/login', { method: 'POST', body })).user), []);
+  const login = useCallback(async (body) => {
+    const { user: u } = await api('/auth/login', { method: 'POST', body });
+    setUser(u);
+    return u;
+  }, []);
   const register = useCallback(async (body) => setUser((await api('/auth/register', { method: 'POST', body })).user), []);
   const logout = useCallback(async () => {
     await api('/auth/logout', { method: 'POST' }).catch(() => {});

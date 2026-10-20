@@ -125,6 +125,17 @@ test('the dashboard summary covers the last seven days and what needs attention'
   assert.equal(res.json.last7.length, 7);
   assert.equal(res.json.last7.at(-1).date, res.json.date);
   assert.ok(Array.isArray(res.json.topDishes));
+  assert.ok(res.json.repeatRate === null || (res.json.repeatRate >= 0 && res.json.repeatRate <= 100));
   assert.equal(typeof res.json.attention.pendingReviews, 'number');
   assert.equal((await clients.kitchen.call('GET', '/api/v1/admin/summary')).status, 403); // revenue is not for floor staff
+});
+
+test('POS sale is priced by the server, paid and sent to the kitchen; marketing cannot use it', { skip }, async () => {
+  const body = { fulfillment: 'dine-in', table: '4', paymentMethod: 'cash', lines: [{ menuItem: String(hummus._id), quantity: 2 }] };
+  assert.equal((await clients.marketing.call('POST', '/api/v1/admin/pos/orders', { body })).status, 403);
+  const res = await clients.host.call('POST', '/api/v1/admin/pos/orders', { body });
+  assert.equal(res.status, 201);
+  assert.equal(res.json.order.totals.totalCents, 290000);
+  assert.equal(res.json.order.payment.status, 'paid');
+  assert.equal(res.json.order.status, 'confirmed');
 });

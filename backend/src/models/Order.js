@@ -18,7 +18,7 @@ const lineSchema = new mongoose.Schema({
 
 const paymentSchema = new mongoose.Schema(
   {
-    method: { type: String, enum: ['card', 'cash-pickup', 'cash-delivery'], required: true },
+    method: { type: String, enum: ['card', 'cash', 'cash-pickup', 'cash-delivery'], required: true },
     status: { type: String, enum: ['pending', 'paid', 'failed', 'cancelled', 'refunded', 'partially-refunded'], default: 'pending' },
     gatewayRef: String, // id from the payment provider, never card data
     amountCents: Number,
@@ -34,7 +34,8 @@ const orderSchema = new mongoose.Schema(
     idempotencyKey: { type: String, unique: true, sparse: true }, // stops double submission
     user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, // optional, guest checkout allowed
     customer: { name: String, email: String, phone: String },
-    fulfillment: { type: String, enum: ['pickup', 'delivery'], required: true },
+    fulfillment: { type: String, enum: ['dine-in', 'pickup', 'delivery'], required: true },
+    table: String, // POS dine-in orders
     scheduledFor: Date,
     delivery: { recipientName: String, line1: String, unit: String, landmark: String, instructions: String, zone: String },
     lines: { type: [lineSchema], validate: (v) => v.length > 0 },

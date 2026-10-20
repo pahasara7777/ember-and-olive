@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../lib/auth.jsx';
+import { STAFF_ROLES } from '../components/Guards.jsx';
 import { Field, FormError } from '../components/Form.jsx';
 import '../styles/account.css';
 
@@ -20,8 +21,11 @@ export default function Login() {
     setBusy(true);
     setError(null);
     try {
-      await login(form);
-      navigate(safePath(location.state?.from), { replace: true });
+      const u = await login(form);
+      // The account icon sends people here with from=/account, so staff are sent to the dashboard unless they were heading elsewhere.
+      const from = location.state?.from;
+      const dest = STAFF_ROLES.includes(u.role) && (!from || from === '/account') ? '/admin' : from;
+      navigate(safePath(dest), { replace: true });
     } catch (err) {
       setError(err);
     } finally {

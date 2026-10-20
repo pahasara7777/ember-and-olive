@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { api, formatDateTime, formatLkr } from '../lib/api.js';
 import { useAuth } from '../lib/auth.jsx';
+import { STAFF_ROLES } from '../components/Guards.jsx';
 import { Field, FormError, fieldError } from '../components/Form.jsx';
 import '../styles/account.css';
 
@@ -133,6 +134,7 @@ export default function Account() {
           {TABS.map(([k, label]) => (
             <button key={k} type="button" className="side" aria-current={tab === k ? 'page' : undefined} onClick={() => { setNote(''); setParams(k === 'overview' ? {} : { tab: k }); }}>{label}</button>
           ))}
+          {STAFF_ROLES.includes(user.role) && <Link className="side" to="/admin">Admin dashboard</Link>}
           <button type="button" className="side out" onClick={async () => { await logout(); navigate('/'); }}>Sign out</button>
         </nav>
       </aside>

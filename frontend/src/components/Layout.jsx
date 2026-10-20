@@ -1,3 +1,4 @@
+import { STAFF_ROLES } from './Guards.jsx';
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
 import { useEffect } from 'react';
 import { useAuth } from '../lib/auth.jsx';
@@ -54,7 +55,7 @@ export default function Layout() {
           <div className="header-actions">
             <Link to="/menu" className="btn btn-outline small">Order Online</Link>
             <Link to="/reservations" className="btn btn-primary small">Book a Table</Link>
-            <Link to={user ? '/account' : '/login'} className="icon-btn" aria-label={user ? 'Your account' : 'Sign in'}>
+            <Link to={user ? (STAFF_ROLES.includes(user.role) ? '/admin' : '/account') : '/login'} className="icon-btn" aria-label={user ? (STAFF_ROLES.includes(user.role) ? 'Admin dashboard' : 'Your account') : 'Sign in'}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4" /><path d="M4 21c1-4 4-6 8-6s7 2 8 6" /></svg>
             </Link>
             <Link to="/checkout" className="icon-btn" aria-label={`Cart, ${count} ${count === 1 ? 'item' : 'items'}`}>

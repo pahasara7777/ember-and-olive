@@ -9,6 +9,7 @@
     "seed": "node src/seed/seed.js",
     "seed:reviews": "node src/seed/reviews.js",
     "create-owner": "node src/scripts/create-owner.js",
+    "create-staff": "node src/scripts/create-staff.js",
     "test": "node --test --test-concurrency=1"
   },
   "dependencies": {
