@@ -28,14 +28,50 @@ router.get('/summary', requireRole('manager', 'owner'), async (req, res) => {
   const today = new Date(Date.now() + 5.5 * 3600000).toISOString().slice(0, 10); // today's date in Colombo
   const from = toUtc(today, '00:00');
   const to = new Date(from.getTime() + 24 * 3600000);
-  const [orders, reservations] = await Promise.all([
-    Order.aggregate([
-      { $match: { createdAt: { $gte: from, $lt: to }, status: { $nin: ['cancelled', 'payment-failed'] } } },
-      { $group: { _id: null, count: { $sum: 1 }, revenueCents: { $sum: '$totals.totalCents' } } }
-    ]),
-    Reservation.countDocuments({ startsAt: trusted({ $gte: from, $lt: to }), status: trusted({ $nin: ['cancelled', 'no-show'] }) })
+  const weekStart = new Date(from.getTime() - 6 * 24 * 3600000);
+  const [week, reservations, guestRows, pendingReviews, newEnquiries, newMessages, placed, approvals] = await Promise.all([
+    Order.find({ createdAt: trusted({ $gte: weekStart, $lt: to }), status: trusted({ $nin: ['cancelled', 'payment-failed'] }) })
+      .select('createdAt totals.totalCents lines.name lines.quantity lines.lineTotalCents')
+      .limit(5000)
+      .lean(),
+    Reservation.countDocuments({ startsAt: trusted({ $gte: from, $lt: to }), status: trusted({ $nin: ['cancelled', 'no-show'] }) }),
+    Reservation.find({ startsAt: trusted({ $gte: from, $lt: to }), status: trusted({ $nin: ['cancelled', 'no-show'] }) }).select('partySize').lean(),
+    Review.countDocuments({ status: 'pending' }),
+    CateringEnquiry.countDocuments({ status: 'new' }),
+    ContactMessage.countDocuments({ status: 'new' }),
+    Order.countDocuments({ status: 'placed' }),
+    Reservation.countDocuments({ status: 'pending', partySize: trusted({ $gte: 9 }), startsAt: trusted({ $gte: new Date() }) })
   ]);
-  res.json({ date: today, orders: orders[0]?.count ?? 0, revenueCents: orders[0]?.revenueCents ?? 0, reservations });
+
+  // Group by Colombo calendar day and by dish in code, so it works the same on every MongoDB-compatible server.
+  const dayKey = (d) => new Date(d.getTime() + 5.5 * 3600000).toISOString().slice(0, 10);
+  const days = Array.from({ length: 7 }, (_, i) => dayKey(new Date(weekStart.getTime() + i * 24 * 3600000)));
+  const byDay = Object.fromEntries(days.map((d) => [d, { date: d, orders: 0, revenueCents: 0 }]));
+  const dishes = new Map();
+  for (const o of week) {
+    const row = byDay[dayKey(o.createdAt)];
+    if (!row) continue;
+    row.orders += 1;
+    row.revenueCents += o.totals?.totalCents ?? 0;
+    for (const l of o.lines ?? []) {
+      const d = dishes.get(l.name) ?? { name: l.name, sold: 0, revenueCents: 0 };
+      d.sold += l.quantity;
+      d.revenueCents += l.lineTotalCents;
+      dishes.set(l.name, d);
+    }
+  }
+  const last7 = days.map((d) => byDay[d]);
+  const todayRow = byDay[today];
+  res.json({
+    date: today,
+    orders: todayRow.orders,
+    revenueCents: todayRow.revenueCents,
+    reservations,
+    guests: guestRows.reduce((n, r) => n + r.partySize, 0),
+    last7,
+    topDishes: [...dishes.values()].sort((a, b) => b.sold - a.sold).slice(0, 5),
+    attention: { placedOrders: placed, pendingReviews, newEnquiries, newMessages, approvals }
+  });
 });
 
 // ---- Orders: all staff ----
