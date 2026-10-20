@@ -2,7 +2,7 @@
 
 Restaurant website and ordering platform for The Ember & Olive, a Mediterranean restaurant in Colombo. Menu, table reservations, pickup and delivery ordering, reviews, catering enquiries and a role-based staff dashboard. Built with MongoDB, Express, React and Node.js, with security built in (see [SECURITY.md](SECURITY.md)).
 
-> Status: working MVP. Payments are cash only (on pickup or delivery); card payments, email notifications, loyalty points and coupons are not built yet. Restaurant details, prices, opening hours and the floor plan are sample data from the brief and must be confirmed by the owner.
+> Status: working MVP. Payments are cash only (on pickup or delivery); card payments, email notifications, loyalty points, coupons and the newsletter are shown in the design but not built yet (the pages say so). Restaurant details, prices, opening hours and the floor plan are sample data from the brief and must be confirmed by the owner.
 
 ## Stack
 
@@ -73,7 +73,9 @@ Each test file creates and drops its own `eo-test-*` database, and never touches
 
 ```
 frontend/              React app (Vite)
-  src/pages/           Customer pages; src/pages/admin/ holds the staff dashboard tabs
+  src/pages/           Customer pages; src/pages/admin/ holds the staff dashboard sections
+  src/styles/          global.css (brand tokens, base) plus one stylesheet per area
+  public/img/          Photos used by the pages
   src/lib/             API client, auth and cart state
   src/components/      Layout, forms, route guards
 backend/               Express API
@@ -83,7 +85,7 @@ backend/               Express API
   src/lib/             Password hashing, tokens, pricing, booking rules, text cleaning, audit
   src/models/          Mongoose models
   src/routes/          auth, menu, orders, reservations, account, content, admin
-  src/seed/            Sample data from the client brief
+  src/seed/            Sample menu, tables, gallery and journal articles from the brief
   src/scripts/         create-owner
   test/                node:test unit and integration tests
 scripts/               Secret scanner used by the pre-commit hook and CI
@@ -110,7 +112,7 @@ Base URL: `/api/v1`
 | GET | `/api/health` | Anyone |
 | GET | `/menu`, `/menu/:slug`, `/gallery`, `/blog`, `/blog/:slug`, `/reviews` | Anyone |
 | GET | `/reservations/availability?date=&partySize=` | Anyone |
-| POST | `/reservations`, `/orders`, `/catering-enquiries` | Anyone (rate limited) |
+| POST | `/reservations`, `/orders`, `/catering-enquiries`, `/contact-messages` | Anyone (rate limited) |
 | GET/PATCH | `/reservations/:reference` (+ email), `GET /orders/:reference` | Holder of the reference |
 | POST | `/auth/register`, `/auth/login`, `/auth/logout` | Anyone (rate limited) |
 | GET/POST | `/auth/me`, `/auth/password` | Signed-in user |
@@ -122,6 +124,6 @@ Base URL: `/api/v1`
 |---|---|
 | host | orders, reservations |
 | kitchen | orders, dish availability |
-| marketing | reviews, catering enquiries |
+| marketing | reviews, catering enquiries, contact messages |
 | manager | everything except people and audit log; may change prices |
 | owner | everything, including people and the audit log |
