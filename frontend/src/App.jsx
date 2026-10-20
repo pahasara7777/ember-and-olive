@@ -1,9 +1,8 @@
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/Layout.jsx';
 import { RequireAuth, RequireStaff } from './components/Guards.jsx';
 import Home from './pages/Home.jsx';
 import Menu from './pages/Menu.jsx';
-import Cart from './pages/Cart.jsx';
 import Checkout from './pages/Checkout.jsx';
 import OrderTracking from './pages/OrderTracking.jsx';
 import Reservations from './pages/Reservations.jsx';
@@ -30,7 +29,7 @@ export default function App() {
         <Route path="events-catering" element={<Events />} />
         <Route path="reviews" element={<Reviews />} />
         <Route path="contact" element={<Contact />} />
-        <Route path="cart" element={<Cart />} />
+        <Route path="cart" element={<Navigate to="/checkout" replace />} />
         <Route path="checkout" element={<Checkout />} />
         <Route path="order-tracking/:reference" element={<OrderTracking />} />
         <Route path="login" element={<Login />} />
