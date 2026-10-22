@@ -18,14 +18,14 @@ function Chart({ days }) {
     <svg className="chart" viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`Line chart of sales over seven days, ${formatLkr(total)} in total`}>
       {[0, 0.5, 1].map((f) => (
         <g key={f}>
-          <line x1={L} x2={W - R} y1={y(top * f)} y2={y(top * f)} stroke="#e8ecf3" />
+          <line x1={L} x2={W - R} y1={y(top * f)} y2={y(top * f)} stroke="#e8e4dc" />
           <text x="4" y={y(top * f) + 4} fontSize="12" fill="#6b7280" fontFamily="Inter, sans-serif">{Math.round((top * f) / 100000)}</text>
         </g>
       ))}
       {days.map((d, i) => <text key={d.date} x={x(i)} y={H - 8} fontSize="12" textAnchor="middle" fill="#6b7280" fontFamily="Inter, sans-serif">{WEEKDAY(d.date)}</text>)}
-      <polygon points={`${x(0)},${y(0)} ${pts} ${x(6)},${y(0)}`} fill="#2563eb" opacity="0.1" />
-      <polyline points={pts} fill="none" stroke="#2563eb" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />
-      {days.map((d, i) => <circle key={d.date} cx={x(i)} cy={y(d.revenueCents)} r="5" fill="#2563eb"><title>{`${d.date}: ${formatLkr(d.revenueCents)}`}</title></circle>)}
+      <polygon points={`${x(0)},${y(0)} ${pts} ${x(6)},${y(0)}`} fill="#c9520a" opacity="0.1" />
+      <polyline points={pts} fill="none" stroke="#c9520a" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />
+      {days.map((d, i) => <circle key={d.date} cx={x(i)} cy={y(d.revenueCents)} r="5" fill="#c9520a"><title>{`${d.date}: ${formatLkr(d.revenueCents)}`}</title></circle>)}
     </svg>
   );
 }
@@ -53,7 +53,7 @@ function Gauge({ pct }) {
   return (
     <svg className="gauge" viewBox="0 0 200 120" role="img" aria-label={pct === null ? 'No repeat guests data' : `${pct}% repeat guests`}>
       <path d="M20 100a80 80 0 0 1 160 0" fill="none" stroke="var(--soft)" strokeWidth="16" strokeLinecap="round" />
-      {pct !== null && <path d="M20 100a80 80 0 0 1 160 0" fill="none" stroke="#2563eb" strokeWidth="16" strokeLinecap="round" strokeDasharray={`${(pct / 100) * len} ${len}`} />}
+      {pct !== null && <path d="M20 100a80 80 0 0 1 160 0" fill="none" stroke="#c9520a" strokeWidth="16" strokeLinecap="round" strokeDasharray={`${(pct / 100) * len} ${len}`} />}
       <text x="100" y="92" textAnchor="middle" fontSize="30" fontWeight="600" fill="var(--ink)" fontFamily="Poppins, sans-serif">{pct === null ? '–' : `${pct}%`}</text>
     </svg>
   );
@@ -142,7 +142,7 @@ export default function Dashboard({ go }) {
       {picker && (
         <div className="modal-back" onClick={() => setPicker(false)}>
           <div className="modal" role="dialog" aria-modal="true" aria-label="Add widget" onClick={(e) => e.stopPropagation()}>
-            <div className="head"><h2>Add widget</h2><button type="button" className="round" onClick={() => setPicker(false)} aria-label="Close">✕</button></div>
+            <div className="head"><h2>Add widget</h2><button type="button" className="tool-btn" onClick={() => setPicker(false)} aria-label="Close">✕</button></div>
             <ul>{WIDGETS.map(([id, name, hint]) => (
               <li key={id}><div><strong>{name}</strong><p>{hint}</p></div><button type="button" className={on(id) ? 'ghost' : 'solid'} onClick={() => toggle(id)}>{on(id) ? 'Remove' : 'Select'}</button></li>
             ))}</ul>
