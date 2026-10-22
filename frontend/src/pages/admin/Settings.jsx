@@ -26,23 +26,32 @@ export default function Settings() {
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
   const dirty = JSON.stringify(f) !== JSON.stringify(saved);
   const example = 290000; // LKR 2,900 bill
+  const charge = Math.round((example * (Number(f.servicePct) || 0)) / 100);
 
   return (
     <form onSubmit={save}>
       {error && <p role="alert" className="alert">{error}</p>}
-      <div className="s-grid">
-        <section className="s-card">
-          <h3>🍽 Dining</h3>
-          <p>Added to dine-in bills at the POS when the cashier ticks “Service charge”.</p>
-          <label>Service charge (%)<input type="number" min="0" max="30" step="any" required value={f.servicePct} onChange={set('servicePct')} /></label>
-          <div className="hint">On a {formatLkr(example)} bill the guest pays {formatLkr(Math.round((example * (Number(f.servicePct) || 0)) / 100))} service charge.</div>
+      <div className="s-list">
+        <section className="s-row">
+          <div className="s-info"><h3>Dining</h3><p>Added to dine-in bills at the POS when the cashier ticks “Service charge”.</p></div>
+          <div className="s-body">
+            <label>Service charge<span className="unit"><input type="number" min="0" max="30" step="any" required value={f.servicePct} onChange={set('servicePct')} /><em>%</em></span></label>
+            <dl className="s-preview" aria-label="Example bill">
+              <dt>Bill</dt><dd>{formatLkr(example)}</dd>
+              <dt>Service charge ({Number(f.servicePct) || 0}%)</dt><dd>{formatLkr(charge)}</dd>
+              <dt className="tot">Guest pays</dt><dd className="tot">{formatLkr(example + charge)}</dd>
+            </dl>
+          </div>
         </section>
-        <section className="s-card">
-          <h3>🛵 Delivery</h3>
-          <p>Applied to online orders at checkout.</p>
-          <label>Delivery fee (LKR)<input type="number" min="0" step="any" required value={f.fee} onChange={set('fee')} /></label>
-          <label>Minimum order (LKR)<input type="number" min="0" step="any" required value={f.min} onChange={set('min')} /></label>
-          <div className="hint">Guests see “{formatLkr(Math.round(Number(f.fee) * 100) || 0)} · minimum order {formatLkr(Math.round(Number(f.min) * 100) || 0)}”.</div>
+        <section className="s-row">
+          <div className="s-info"><h3>Delivery</h3><p>Applied to online orders at checkout.</p></div>
+          <div className="s-body">
+            <div className="s-two">
+              <label>Delivery fee<span className="unit"><em>LKR</em><input type="number" min="0" step="any" required value={f.fee} onChange={set('fee')} /></span></label>
+              <label>Minimum order<span className="unit"><em>LKR</em><input type="number" min="0" step="any" required value={f.min} onChange={set('min')} /></span></label>
+            </div>
+            <p className="s-preview s-say">Guests see <b>{formatLkr(Math.round(Number(f.fee) * 100) || 0)}</b> delivery · minimum order <b>{formatLkr(Math.round(Number(f.min) * 100) || 0)}</b></p>
+          </div>
         </section>
       </div>
       <div className="s-save">
