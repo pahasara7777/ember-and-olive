@@ -4,14 +4,16 @@ import { HttpError } from '../middleware/error.js';
 export const DELIVERY_FEE_CENTS = 35000; // LKR 350
 export const DELIVERY_MIN_CENTS = 200000; // LKR 2,000 minimum for delivery
 export const MAX_LINE_QUANTITY = 20;
+export const SERVICE_CHARGE_PCT = 10; // POS dine-in service charge, optional per sale
 
 /**
  * Prices a cart from the menu as stored in the database. The browser only says WHICH dishes and options
  * it wants; every name, price and total here is recomputed on the server, in whole cents.
  * @param {Map<string, object>} menuById menu items keyed by id string
  * @param {Array<{menuItem: string, quantity: number, options?: string[], notes?: string}>} lines
+ * @param {{deliveryFeeCents: number, deliveryMinCents: number}} [rules] the owner's settings; defaults are the sample brief values
  */
-export function priceCart(menuById, lines, fulfillment) {
+export function priceCart(menuById, lines, fulfillment, rules = { deliveryFeeCents: DELIVERY_FEE_CENTS, deliveryMinCents: DELIVERY_MIN_CENTS }) {
   const priced = lines.map((line) => {
     const item = menuById.get(line.menuItem);
     if (!item || item.archived) throw new HttpError(400, 'One of the dishes in your cart is no longer on the menu');
@@ -43,10 +45,10 @@ export function priceCart(menuById, lines, fulfillment) {
   });
 
   const subtotalCents = priced.reduce((sum, l) => sum + l.lineTotalCents, 0);
-  if (fulfillment === 'delivery' && subtotalCents < DELIVERY_MIN_CENTS) {
-    throw new HttpError(400, 'The minimum order for delivery is LKR 2,000');
+  if (fulfillment === 'delivery' && subtotalCents < rules.deliveryMinCents) {
+    throw new HttpError(400, `The minimum order for delivery is LKR ${(rules.deliveryMinCents / 100).toLocaleString('en-LK')}`);
   }
-  const deliveryFeeCents = fulfillment === 'delivery' ? DELIVERY_FEE_CENTS : 0;
+  const deliveryFeeCents = fulfillment === 'delivery' ? rules.deliveryFeeCents : 0;
   return {
     lines: priced,
     totals: { subtotalCents, discountCents: 0, deliveryFeeCents, serviceChargeCents: 0, taxCents: 0, loyaltyRedeemedCents: 0, totalCents: subtotalCents + deliveryFeeCents }

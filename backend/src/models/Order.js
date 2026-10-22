@@ -22,6 +22,8 @@ const paymentSchema = new mongoose.Schema(
     status: { type: String, enum: ['pending', 'paid', 'failed', 'cancelled', 'refunded', 'partially-refunded'], default: 'pending' },
     gatewayRef: String, // id from the payment provider, never card data
     amountCents: Number,
+    tenderedCents: Number, // POS cash: what the guest handed over
+    changeCents: Number, // POS cash: what went back
     refundedCents: { type: Number, default: 0 },
     events: [{ type: { type: String }, at: Date, payload: mongoose.Schema.Types.Mixed }]
   },
@@ -36,6 +38,7 @@ const orderSchema = new mongoose.Schema(
     customer: { name: String, email: String, phone: String },
     fulfillment: { type: String, enum: ['dine-in', 'pickup', 'delivery'], required: true },
     table: String, // POS dine-in orders
+    source: { type: String, enum: ['web', 'pos'], default: 'web' },
     scheduledFor: Date,
     delivery: { recipientName: String, line1: String, unit: String, landmark: String, instructions: String, zone: String },
     lines: { type: [lineSchema], validate: (v) => v.length > 0 },

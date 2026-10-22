@@ -43,7 +43,9 @@ export function originGuard(env) {
   return (req, res, next) => {
     if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) return next();
     const origin = req.get('origin');
-    if (origin && !allowed.has(origin)) return next(new HttpError(403, 'Request origin not allowed'));
+    // Same host as the one being called is our own site (a cross-site forgery always carries the attacker's origin).
+    const sameHost = origin && new URL(origin).host === (req.get('x-forwarded-host') ?? req.get('host'));
+    if (origin && !allowed.has(origin) && !sameHost) return next(new HttpError(403, 'Request origin not allowed'));
     next();
   };
 }

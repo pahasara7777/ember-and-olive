@@ -3,3 +3,4 @@ export { MenuCategory, MenuItem, DIETARY_TAGS, CHANNELS } from './Menu.js';
 export { DiningTable, Reservation } from './Reservation.js';
 export { default as Order, ORDER_STATUSES } from './Order.js';
 export { Coupon, LoyaltyTransaction, Review, GalleryImage, BlogPost, CateringEnquiry, ContactMessage, AuditLog } from './Marketing.js';
+export { Setting, StockItem, DayClose } from './Ops.js';

@@ -8,6 +8,8 @@ import { audit } from '../lib/audit.js';
 import { optionalPlain, objectId } from '../lib/text.js';
 import { toUtc } from '../lib/booking.js';
 import { priceCart } from '../lib/pricing.js';
+import { getSettings } from '../lib/settings.js';
+import ops from './ops.js';
 import { newReference } from '../lib/ids.js';
 
 const router = Router();
@@ -111,34 +113,92 @@ router.patch('/orders/:id/status', FLOOR, async (req, res) => {
   res.json({ order });
 });
 
-// ---- POS: staff ring up a walk-in sale. Priced on the server; paid at the counter, so it goes straight to the kitchen. ----
+// ---- POS: staff ring up a walk-in sale. Priced on the server. Paid at once, or kept as an open tab (sent to the kitchen, paid later). ----
+const payBody = {
+  paymentMethod: z.enum(['cash', 'card']), // card = the shop's own card terminal; no gateway involved
+  tenderedCents: z.number().int().min(0).max(100_000_000).optional() // cash handed over; required for cash
+};
 const posBody = z.strictObject({
   fulfillment: z.enum(['dine-in', 'pickup']),
   table: optionalPlain(20),
-  paymentMethod: z.enum(['cash', 'card']), // card = the shop's own card terminal; no gateway involved
+  ...payBody,
+  payLater: z.boolean().optional(), // open a tab instead of taking payment now
+  serviceCharge: z.boolean().optional(),
+  discount: z.strictObject({ type: z.enum(['percent', 'fixed']), value: z.number().int().min(1).max(100_000_000) }).optional(), // fixed is in cents
   notes: optionalPlain(300),
   lines: z.array(z.strictObject({ menuItem: objectId, quantity: z.number().int().min(1).max(20), options: z.array(objectId).max(10).optional(), notes: optionalPlain(200) })).min(1).max(40)
 });
+
+// Cash must cover the total; the change is stored so the receipt and the drawer count agree.
+const paid = (body, total) => {
+  const cash = body.paymentMethod === 'cash';
+  if (cash && (body.tenderedCents ?? 0) < total) throw new HttpError(400, 'Cash received is less than the total');
+  return { method: body.paymentMethod, status: 'paid', amountCents: total, ...(cash && { tenderedCents: body.tenderedCents, changeCents: body.tenderedCents - total }) };
+};
 
 router.post('/pos/orders', FLOOR, async (req, res) => {
   const body = posBody.parse(req.body);
   const ids = [...new Set(body.lines.map((l) => l.menuItem))];
   const items = await MenuItem.find({ _id: trusted({ $in: ids }) }); // ids validated as ObjectIds above
-  const priced = priceCart(new Map(items.map((i) => [String(i._id), i])), body.lines, body.fulfillment);
+  const settings = await getSettings();
+  const priced = priceCart(new Map(items.map((i) => [String(i._id), i])), body.lines, body.fulfillment, settings);
+  const { subtotalCents } = priced.totals;
+
+  let discountCents = 0;
+  if (body.discount) {
+    if (!['manager', 'owner'].includes(req.user.role)) throw new HttpError(403, 'Only a manager can give a discount');
+    if (body.discount.type === 'percent' && body.discount.value > 100) throw new HttpError(400, 'A discount cannot be over 100%');
+    discountCents = body.discount.type === 'percent' ? Math.round((subtotalCents * body.discount.value) / 100) : body.discount.value;
+    if (discountCents > subtotalCents) throw new HttpError(400, 'The discount is more than the bill');
+  }
+  const serviceChargeCents = body.serviceCharge && body.fulfillment === 'dine-in' ? Math.round(((subtotalCents - discountCents) * settings.servicePct) / 100) : 0;
+  const totalCents = subtotalCents - discountCents + serviceChargeCents;
+
   const order = await Order.create({
     reference: newReference('O'),
     user: req.user._id,
+    source: 'pos',
     customer: { name: body.table ? `Table ${body.table}` : 'Walk-in' },
     fulfillment: body.fulfillment,
     table: body.table,
-    ...priced,
-    payment: { method: body.paymentMethod, status: 'paid', amountCents: priced.totals.totalCents },
+    lines: priced.lines,
+    totals: { ...priced.totals, discountCents, serviceChargeCents, totalCents },
+    payment: body.payLater ? { method: body.paymentMethod, status: 'pending', amountCents: totalCents } : paid(body, totalCents),
     status: 'confirmed',
     statusHistory: [{ status: 'confirmed', at: new Date(), by: req.user._id }],
     notes: body.notes
   });
-  await audit(req, 'order.pos', 'Order', order._id, null, { total: priced.totals.totalCents, method: body.paymentMethod });
+  await audit(req, 'order.pos', 'Order', order._id, null, { total: totalCents, discount: discountCents, method: body.paymentMethod, tab: Boolean(body.payLater) });
   res.status(201).json({ order });
+});
+
+// Open tabs: sent to the kitchen, not paid yet.
+router.get('/pos/tabs', FLOOR, async (req, res) => {
+  const orders = await Order.find({ source: 'pos', 'payment.status': 'pending', status: 'confirmed' }).sort('createdAt').limit(100).lean();
+  res.json({ orders });
+});
+
+router.post('/pos/orders/:id/settle', FLOOR, async (req, res) => {
+  const body = z.strictObject(payBody).parse(req.body);
+  const order = await byId(Order, req.params.id);
+  if (order.source !== 'pos' || order.payment?.status !== 'pending' || order.status !== 'confirmed') throw new HttpError(409, 'This tab is not open');
+  order.payment = paid(body, order.totals.totalCents);
+  await order.save();
+  await audit(req, 'order.pos-settle', 'Order', order._id, null, { total: order.totals.totalCents, method: body.paymentMethod });
+  res.json({ order });
+});
+
+// Takings since midnight (Colombo), for the end-of-day cash count. Management only, like the dashboard revenue.
+router.get('/pos/today', requireRole('manager', 'owner'), async (req, res) => {
+  const from = toUtc(new Date(Date.now() + 5.5 * 3600000).toISOString().slice(0, 10), '00:00');
+  const orders = await Order.find({ source: 'pos', 'payment.status': 'paid', createdAt: trusted({ $gte: from }) }).select('payment totals').lean();
+  const sum = (method, key) => orders.filter((o) => o.payment.method === method).reduce((t, o) => t + (o.payment[key] ?? 0), 0);
+  res.json({
+    sales: orders.length,
+    cashCents: sum('cash', 'amountCents'), // cash kept after change is given back
+    cardCents: sum('card', 'amountCents'),
+    discountCents: orders.reduce((t, o) => t + (o.totals.discountCents ?? 0), 0)
+  });
 });
 
 // ---- Reservations: host, manager, owner ----
@@ -253,5 +313,7 @@ router.patch('/users/:id', OWNER, async (req, res) => {
 router.get('/audit', OWNER, async (req, res) => {
   res.json({ entries: await AuditLog.find().sort('-createdAt').limit(200).lean() });
 });
+
+router.use(ops);
 
 export default router;

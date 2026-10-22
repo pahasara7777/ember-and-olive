@@ -8,6 +8,8 @@
     "build": "npm run build -w @ember-olive/frontend",
     "start": "npm start -w @ember-olive/backend",
     "seed": "npm run seed -w @ember-olive/backend",
+    "demo": "npm run demo -w @ember-olive/backend",
+    "demo:clear": "npm run demo:clear -w @ember-olive/backend",
     "test": "npm test -w @ember-olive/backend && node --test scripts/*.test.mjs",
     "scan:secrets": "node scripts/check-secrets.mjs",
     "scan:history": "node scripts/check-secrets.mjs --history",

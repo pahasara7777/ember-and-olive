@@ -10,7 +10,8 @@ const make = (opts) =>
   });
 
 // Whole API, per IP.
-export const apiLimiter = (opts = {}) => make({ windowMs: 15 * 60 * 1000, limit: 300, ...opts });
+// Signed-in staff screens (kitchen board, floor, orders) poll every few seconds, and a whole restaurant shares one IP, so /admin is not counted here; it needs a session anyway.
+export const apiLimiter = (opts = {}) => make({ windowMs: 15 * 60 * 1000, limit: 300, skip: (req) => req.path.startsWith('/v1/admin'), ...opts });
 // Sign-in and sign-up: only failures count, so real customers are not locked out by their own successes.
 export const authLimiter = (opts = {}) => make({ windowMs: 15 * 60 * 1000, limit: 10, skipSuccessfulRequests: true, ...opts });
 // Public forms that create records or send mail (reservations, orders, enquiries, reviews).

@@ -131,11 +131,35 @@ test('the dashboard summary covers the last seven days and what needs attention'
 });
 
 test('POS sale is priced by the server, paid and sent to the kitchen; marketing cannot use it', { skip }, async () => {
-  const body = { fulfillment: 'dine-in', table: '4', paymentMethod: 'cash', lines: [{ menuItem: String(hummus._id), quantity: 2 }] };
+  await MenuItem.updateOne({ _id: hummus._id }, { availability: 'available', priceCents: 145000 }); // earlier tests sold it out and repriced it
+  const body = { fulfillment: 'dine-in', table: '4', paymentMethod: 'cash', tenderedCents: 300000, lines: [{ menuItem: String(hummus._id), quantity: 2 }] };
   assert.equal((await clients.marketing.call('POST', '/api/v1/admin/pos/orders', { body })).status, 403);
   const res = await clients.host.call('POST', '/api/v1/admin/pos/orders', { body });
   assert.equal(res.status, 201);
   assert.equal(res.json.order.totals.totalCents, 290000);
   assert.equal(res.json.order.payment.status, 'paid');
+  assert.equal(res.json.order.payment.changeCents, 10000);
   assert.equal(res.json.order.status, 'confirmed');
+  const short = await clients.host.call('POST', '/api/v1/admin/pos/orders', { body: { ...body, tenderedCents: 100000 } });
+  assert.equal(short.status, 400); // cash must cover the total
+});
+
+test('POS discount is manager-only; an open tab is paid later and counted in takings for the day', { skip }, async () => {
+  await MenuItem.updateOne({ _id: hummus._id }, { availability: 'available', priceCents: 145000 }); // earlier tests sold it out and repriced it
+  const line = { menuItem: String(hummus._id), quantity: 2 }; // 2 x LKR 1,450
+  const base = { fulfillment: 'dine-in', table: '7', paymentMethod: 'cash', lines: [line] };
+  const discount = { type: 'percent', value: 10 };
+  assert.equal((await clients.host.call('POST', '/api/v1/admin/pos/orders', { body: { ...base, tenderedCents: 400000, discount } })).status, 403);
+  const tab = await clients.manager.call('POST', '/api/v1/admin/pos/orders', { body: { ...base, payLater: true, serviceCharge: true, discount } });
+  assert.equal(tab.status, 201);
+  assert.equal(tab.json.order.totals.totalCents, 261000 + 26100); // 2,900 - 10%, plus 10% service
+  assert.equal(tab.json.order.payment.status, 'pending');
+  assert.equal((await clients.host.call('GET', '/api/v1/admin/pos/tabs')).json.orders.some((o) => o._id === tab.json.order._id), true);
+  const id = tab.json.order._id;
+  assert.equal((await clients.host.call('POST', `/api/v1/admin/pos/orders/${id}/settle`, { body: { paymentMethod: 'cash', tenderedCents: 100 } })).status, 400);
+  const settled = await clients.host.call('POST', `/api/v1/admin/pos/orders/${id}/settle`, { body: { paymentMethod: 'cash', tenderedCents: 300000 } });
+  assert.equal(settled.json.order.payment.changeCents, 300000 - 287100);
+  assert.equal((await clients.host.call('POST', `/api/v1/admin/pos/orders/${id}/settle`, { body: { paymentMethod: 'cash', tenderedCents: 300000 } })).status, 409); // already paid
+  assert.equal((await clients.host.call('GET', '/api/v1/admin/pos/today')).status, 403);
+  assert.equal((await clients.manager.call('GET', '/api/v1/admin/pos/today')).json.cashCents >= 287100, true);
 });

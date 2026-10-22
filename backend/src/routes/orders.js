@@ -5,6 +5,7 @@ import { MenuItem, Order } from '../models/index.js';
 import { HttpError } from '../middleware/error.js';
 import { formLimiter, lookupLimiter } from '../middleware/rateLimit.js';
 import { priceCart } from '../lib/pricing.js';
+import { getSettings } from '../lib/settings.js';
 import { newReference } from '../lib/ids.js';
 import { plain, optionalPlain, email, phone, objectId, reference } from '../lib/text.js';
 
@@ -71,7 +72,7 @@ router.post('/', formLimiter(), async (req, res) => {
 
   const ids = [...new Set(body.lines.map((l) => l.menuItem))];
   const items = await MenuItem.find({ _id: mongoose.trusted({ $in: ids }) }) // ids are already validated as ObjectIds;
-  const priced = priceCart(new Map(items.map((i) => [String(i._id), i])), body.lines, body.fulfillment);
+  const priced = priceCart(new Map(items.map((i) => [String(i._id), i])), body.lines, body.fulfillment, await getSettings());
 
   const now = new Date();
   const order = await Order.create({
