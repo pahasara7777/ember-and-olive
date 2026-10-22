@@ -2,7 +2,7 @@
 .hero .container { padding-block: 72px 130px; display: flex; flex-wrap: wrap; align-items: center; gap: 48px; }
 .hero-copy { flex: 1 1 min(100%, 480px); min-width: 0; }
 .hero h1 { font-size: clamp(34px, 4.6vw, 60px); line-height: 1.1; color: var(--linen); }
-.hero-copy > p:not(.eyebrow) { margin: 28px 0 36px; font-size: 19px; max-width: 520px; color: #e8e1d0; }
+.hero-copy > p:not(.eyebrow) { margin: 28px 0 36px; font-size: 19px; max-width: 520px; color: #e9e9e9; }
 .hero-art { flex: 1 1 min(100%, 420px); display: flex; justify-content: center; }
 .hero-art .ring { width: 100%; max-width: 520px; }
 .btn-row { display: flex; flex-wrap: wrap; gap: 14px; }
@@ -40,15 +40,15 @@
 .cta-pair { display: flex; flex-wrap: wrap; gap: 24px; padding-top: 60px; }
 .cta-order { flex: 1 1 min(100%, 520px); background: var(--olive); color: var(--linen); border-radius: 24px; padding: 48px; }
 .cta-order h2 { font-size: 44px; color: var(--linen); }
-.cta-order p { margin: 12px 0 28px; color: #e8e1d0; max-width: 440px; }
-.coupon { flex: 1 1 min(100%, 420px); background: #f0d9c4; border: 2px dashed var(--button); border-radius: 24px; padding: 40px; display: flex; flex-direction: column; justify-content: center; }
-.coupon .k { margin: 0; font: 600 13px var(--font-body); letter-spacing: 0.14em; text-transform: uppercase; color: #7a3f1f; }
-.coupon .code { font: 500 clamp(38px, 11vw, 56px)/1.05 var(--font-display); color: #7a3f1f; margin: 6px 0 0; }
+.cta-order p { margin: 12px 0 28px; color: #e9e9e9; max-width: 440px; }
+.coupon { flex: 1 1 min(100%, 420px); background: #fde6d3; border: 2px dashed var(--button); border-radius: 24px; padding: 40px; display: flex; flex-direction: column; justify-content: center; }
+.coupon .k { margin: 0; font: 600 13px var(--font-body); letter-spacing: 0.14em; text-transform: uppercase; color: #8a3a05; }
+.coupon .code { font: 500 clamp(38px, 11vw, 56px)/1.05 var(--font-display); color: #8a3a05; margin: 6px 0 0; }
 .coupon p { margin: 8px 0 0; color: var(--ink-2); }
 .coupon .fine { margin-top: 12px; font-size: 13px; color: var(--muted); }
 
 .quotes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
-.quote { margin: 0; border: 1.5px dashed #bdb29a; border-radius: 16px; padding: 28px; }
+.quote { margin: 0; border: 1.5px dashed var(--border); border-radius: 16px; padding: 28px; }
 .quote blockquote { margin: 14px 0; font-size: 17px; color: var(--ink-2); }
 .quote figcaption { font-size: 14px; color: var(--muted); }
 
@@ -60,7 +60,7 @@
 .event-band .pic img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 
 .social { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px; }
-.social img { aspect-ratio: 1 / 1; width: 100%; object-fit: cover; border-radius: 12px; background: #ddd3bd; }
+.social img { aspect-ratio: 1 / 1; width: 100%; object-fit: cover; border-radius: 12px; background: var(--line); }
 
 .newsletter { background: var(--button); color: #fff; margin-top: 60px; }
 .newsletter .container { padding-block: 56px; display: flex; flex-wrap: wrap; gap: 32px; align-items: center; justify-content: space-between; }
@@ -96,7 +96,7 @@
 
 .social .shot { padding: 0; border: none; background: none; cursor: zoom-in; border-radius: 12px; overflow: hidden; }
 .lightbox { border: none; border-radius: 16px; padding: 16px; background: var(--olive); max-width: min(92vw, 900px); }
-.lightbox::backdrop { background: rgba(20, 28, 22, 0.8); }
+.lightbox::backdrop { background: rgba(17, 17, 17, 0.8); }
 .lightbox[open] { display: flex; flex-direction: column; gap: 12px; align-items: center; animation: rise 0.3s ease-out; }
 .lightbox img { max-height: 76vh; width: auto; border-radius: 10px; }
 
@@ -151,7 +151,7 @@
 .reserve > div { flex: 1 1 min(100%, 440px); padding: 40px; }
 .reserve h2 { font-size: clamp(26px, 3vw, 36px); margin: 4px 0 12px; }
 .reserve p:not(.eyebrow) { color: #cfcfcf; margin-bottom: 24px; }
-.reserve img { flex: 1 1 min(100%, 320px); min-height: 220px; width: 100%; object-fit: cover; border-radius: 0 0 0 200px; }
-@media (max-width: 640px) { .reserve > div { padding: 28px 20px; } .years { width: 76px; height: 76px; } .years b { font-size: 20px; } }
+.reserve img { flex: 1 1 min(100%, 320px); min-height: 220px; max-height: 340px; width: 100%; object-fit: cover; border-radius: 0 0 0 200px; }
+@media (max-width: 640px) { .reserve > div { padding: 24px 20px; } .reserve img { min-height: 0; height: 170px; max-height: none; border-radius: 0 0 0 80px; } .years { width: 76px; height: 76px; } .years b { font-size: 20px; } }
 .cta-order { background: #111; }
 .event-band { background: var(--sand); }

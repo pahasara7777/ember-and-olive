@@ -13,7 +13,7 @@ const nav = [
 ];
 
 // Elements that fade up as they scroll into view (styled in global.css).
-const REVEAL = '.page-head, .section-head, .dish, .cat-link, .quote, .cta-pair > *, .story .container > *, .event-band, .social img, .panel, .info-card .item';
+const REVEAL = '.page-head, .section-head, .dish, .cat-link, .quote, .cta-pair > *, .story .container > *, .event-band, .social img, .panel';
 
 const Leaf = () => (
   <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#F47B20" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -43,7 +43,7 @@ export default function Layout() {
   }, []);
 
   return (
-    <>
+    <div className="site">
       <div className="scroll-progress" aria-hidden="true" />
       <a href="#main" className="skip-link">Skip to content</a>
       <header className="site-header">
@@ -105,6 +105,6 @@ export default function Layout() {
           </div>
         </div>
       </footer>
-    </>
+    </div>
   );
 }

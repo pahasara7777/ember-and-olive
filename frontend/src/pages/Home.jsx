@@ -16,9 +16,8 @@ const CAT_NOTES = {
 };
 
 const Arrow = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#A65F37" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
 );
-const icon = { width: 32, height: 32, viewBox: '0 0 24 24', fill: 'none', stroke: '#A65F37', strokeWidth: 1.5, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': true };
 
 // [opens, closes] in minutes after midnight, Sunday first. Mirrors the footer hours.
 const HOURS = [[600, 1260], [], [690, 1320], [690, 1320], [690, 1320], [690, 1350], [600, 1350]];
@@ -50,7 +49,7 @@ export default function Home() {
   }, []);
 
   const featured = menu.items.filter((i) => i.featured).slice(0, 4);
-  const more = menu.items.filter((i) => !i.featured && dishPhoto(i.slug)).slice(0, 8);
+  const more = menu.items.filter((i) => !i.featured && dishPhoto(i)).slice(0, 8);
   const tagLine = (d) => [...d.dietaryTags.map((t) => t[0].toUpperCase() + t.slice(1)), ...(d.allergens.length ? [`Contains ${d.allergens.join(', ')}`] : [])].join(' · ');
 
   return (
@@ -59,16 +58,16 @@ export default function Home() {
         {heroVideo && <video className="hero-video" src="/hero.mp4" poster={photo('prawns-grill')} autoPlay muted loop playsInline aria-hidden="true" tabIndex={-1} />}
         <div className="container">
           <div className="hero-copy">
-            <p className="eyebrow script">Welcome to The Ember &amp; Olive</p>
-            <h1>Good Food,<br />Good <span className="script">Mood</span></h1>
-            <p>Fire-kissed flavours and Mediterranean soul. A neighbourhood table for honest food, good wine, and memorable evenings in Colombo 07.</p>
+            <p className="eyebrow">Mediterranean kitchen · Colombo 07</p>
+            <h1>Cooked over<br />open <em>fire</em>.</h1>
+            <p>Charcoal, olive oil and sea salt. A neighbourhood table for honest food, good wine and long evenings on Gregory's Road.</p>
             <div className="btn-row">
-              <Link to="/menu" className="btn btn-primary">Explore Our Menu →</Link>
-              <Link to="/about" className="btn btn-light">▷ Watch Our Story</Link>
+              <Link to="/menu" className="btn btn-primary">Explore the menu</Link>
+              <Link to="/about" className="btn btn-light">Our story</Link>
             </div>
           </div>
           <div className="hero-art">
-            <div className="ring peach"><img src={photo('prawns-grill')} alt="Garlic prawns sizzling in a dark cast-iron pan" /></div>
+            <figure className="hero-photo"><img src={photo('prawns-grill')} alt="Garlic prawns sizzling in a dark cast-iron pan" /><figcaption>Garlic prawns, from the grill</figcaption></figure>
             <ul className="hero-info" aria-label="At a glance">
               <li><h2 className={status.open ? 'is-open' : ''}>{status.open ? 'Open now' : 'Closed now'}</h2><p>{status.text}</p></li>
               <li><h2>Location</h2><p>42 Gregory's Road, Colombo 07</p></li>
@@ -78,15 +77,17 @@ export default function Home() {
         </div>
       </section>
 
+      <div className="marquee" aria-hidden="true"><div>{[0, 1].map((k) => ['Charcoal grill', 'Cold-pressed olive oil', 'Handmade pasta', 'Sea salt & citrus', 'Open every evening'].map((t) => <span key={`${k}${t}`}>{t}</span>))}</div></div>
+
       <section className="container info-card" aria-label="Why guests choose us">
         <div className="inner">
-          {[['Fresh Ingredients', 'We use only the freshest, highest quality ingredients.', <path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z" />],
-            ['Expertly Crafted', 'Our chefs craft every dish with precision and love.', <><circle cx="12" cy="13" r="7" /><path d="M12 9v4l3 2M10 3h4" /></>],
-            ['Cozy Ambience', 'A warm and inviting space perfect for any occasion.', <path d="M4 20V9l8-5 8 5v11zM9 20v-6h6v6" />],
-            ['Great Service', 'We prioritize your satisfaction above everything.', <><circle cx="12" cy="8" r="4" /><path d="M4 21c1-4 4-6 8-6s7 2 8 6" /></>]].map(([h, p, d]) => (
+          {[['Fresh Ingredients', 'Only the freshest, highest quality produce, bought each morning.'],
+            ['Expertly Crafted', 'Every dish is cooked by hand, over fire, with precision.'],
+            ['Cozy Ambience', 'A warm, candlelit room for any occasion.'],
+            ['Great Service', 'We look after you from the first drink to the last.']].map(([h, p], i) => (
             <div key={h} className="item">
-              <svg {...icon}>{d}</svg>
-              <div><h2>{h}</h2><p>{p}</p></div>
+              <span className="no">{String(i + 1).padStart(2, '0')}</span>
+              <h2>{h}</h2><p>{p}</p>
             </div>
           ))}
         </div>
@@ -101,7 +102,7 @@ export default function Home() {
         <ul className="dish-row">
           {featured.map((d) => (
             <li key={d._id} className="dish">
-              {dishPhoto(d.slug) ? <img src={dishPhoto(d.slug)} alt={d.name} loading="lazy" /> : <div className="plate" role="img" aria-label={d.name} />}
+              {dishPhoto(d) ? <img src={dishPhoto(d)} alt={d.name} loading="lazy" /> : <div className="plate" role="img" aria-label={d.name} />}
               <div className="body">
                 <h3>{d.name}</h3>
                 <p className="tags">{tagLine(d)}</p>
@@ -121,7 +122,7 @@ export default function Home() {
           <Slider label="More dishes" auto={5000}>
             {more.map((d) => (
               <div key={d._id} className="slide dish">
-                <img src={dishPhoto(d.slug)} alt={d.name} loading="lazy" />
+                <img src={dishPhoto(d)} alt={d.name} loading="lazy" />
                 <div className="body">
                   <h3>{d.name}</h3>
                   <div className="foot">

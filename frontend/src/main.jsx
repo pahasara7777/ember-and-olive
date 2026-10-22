@@ -5,6 +5,7 @@ import App from './App.jsx';
 import { AuthProvider } from './lib/auth.jsx';
 import { CartProvider } from './lib/cart.jsx';
 import './styles/global.css';
+import './styles/theme.css';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

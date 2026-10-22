@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { api, formatLkr } from '../lib/api.js';
 import { useCart } from '../lib/cart.jsx';
@@ -8,8 +8,7 @@ import { Field, FormError, fieldError } from '../components/Form.jsx';
 import '../styles/checkout.css';
 
 // Mirrors the server's rules for display only; the server prices every order again.
-const DELIVERY_FEE = 35000;
-const DELIVERY_MIN = 200000;
+const DEFAULT_RULES = { deliveryFeeCents: 35000, deliveryMinCents: 200000 }; // until the owner's settings load
 const ZONES = ['Colombo 07', 'Colombo 05 / 06', 'Other (check coverage)'];
 
 export default function Checkout() {
@@ -22,6 +21,8 @@ export default function Checkout() {
   const [agree, setAgree] = useState(false);
   const [error, setError] = useState(null);
   const [busy, setBusy] = useState(false);
+  const [rules, setRules] = useState(DEFAULT_RULES);
+  useEffect(() => { api('/menu/rules').then(setRules).catch(() => {}); }, []);
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
   const delivery = cart.fulfilment === 'delivery';
 
@@ -35,9 +36,9 @@ export default function Checkout() {
     );
   }
 
-  const fee = delivery ? DELIVERY_FEE : 0;
+  const fee = delivery ? rules.deliveryFeeCents : 0;
   const total = cart.subtotalCents + fee;
-  const belowMin = delivery && cart.subtotalCents < DELIVERY_MIN;
+  const belowMin = delivery && cart.subtotalCents < rules.deliveryMinCents;
 
   async function submit(e) {
     e.preventDefault();
@@ -83,7 +84,7 @@ export default function Checkout() {
             <legend>Fulfilment</legend>
             <div className="opt-grid">
               <label className="opt"><input type="radio" name="ful" checked={!delivery} onChange={() => cart.setFulfilment('pickup')} /><span><b>Pickup</b><span>Free · ready in about 25 minutes</span></span></label>
-              <label className="opt"><input type="radio" name="ful" checked={delivery} onChange={() => cart.setFulfilment('delivery')} /><span><b>Delivery</b><span>LKR 350 · minimum order LKR 2,000</span></span></label>
+              <label className="opt"><input type="radio" name="ful" checked={delivery} onChange={() => cart.setFulfilment('delivery')} /><span><b>Delivery</b><span>{formatLkr(rules.deliveryFeeCents)} · minimum order {formatLkr(rules.deliveryMinCents)}</span></span></label>
             </div>
             <div className="field" style={{ marginTop: 18, maxWidth: 360 }}>
               <label htmlFor="c-when">Time</label>
@@ -115,7 +116,7 @@ export default function Checkout() {
                 <div className="full"><Field label="Landmark" value={form.landmark} onChange={set('landmark')} maxLength={100} /></div>
               </div>
               <p className="hint-box" style={{ marginTop: 12 }}>Outside our delivery zones? We will explain, and you can switch to pickup without losing your cart.</p>
-              {belowMin && <p role="alert" className="alert" style={{ marginTop: 12 }}>Delivery needs a minimum order of LKR 2,000. Add a dish or switch to pickup.</p>}
+              {belowMin && <p role="alert" className="alert" style={{ marginTop: 12 }}>Delivery needs a minimum order of {formatLkr(rules.deliveryMinCents)}. Add a dish or switch to pickup.</p>}
             </div>
           )}
 

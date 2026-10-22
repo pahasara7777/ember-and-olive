@@ -72,7 +72,7 @@ export default function Menu() {
             <ul className="dish-grid">
               {shown.map((d) => {
                 const ok = d.availability === 'available';
-                const img = dishPhoto(d.slug);
+                const img = dishPhoto(d);
                 const tags = [...d.dietaryTags.map(cap), ...d.allergens.map((a) => `Contains ${a}`)];
                 return (
                   <li key={d._id}>

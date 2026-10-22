@@ -9,4 +9,5 @@ const BY_SLUG = {
 };
 
 export const photo = (name) => `/img/${name}.jpg`;
-export const dishPhoto = (slug) => (BY_SLUG[slug] ? photo(BY_SLUG[slug]) : null);
+// Takes a dish (a photo uploaded in the admin wins) or just its slug (the sample photos).
+export const dishPhoto = (dish) => (typeof dish === 'string' ? (BY_SLUG[dish] ? photo(BY_SLUG[dish]) : null) : dish?.images?.[0]?.url || dishPhoto(dish?.slug));

@@ -10,8 +10,8 @@ const VALUES = [
 const TEAM = [['[Founder name]', 'Founder & Owner'], ['[Head Chef name]', 'Head Chef'], ['[Manager name]', 'Restaurant Manager'], ['[Pastry Chef name]', 'Pastry Chef']];
 const TIMELINE = [
   ['2018', 'Doors open', 'A small family dining room in Colombo 07.'],
-  ['[Year]', 'The charcoal grill', 'Open-flame cooking becomes the heart of the kitchen.'],
-  ['[Year]', 'Growing to 72 seats', 'A larger dining room and private dining area.'],
+  ['2020', 'The charcoal grill', 'Open-flame cooking becomes the heart of the kitchen.'],
+  ['2023', 'Growing to 72 seats', 'A larger dining room and private dining area.'],
   ['2026', 'Takeaway & catering', 'Online ordering and catering for offices and events.']
 ];
 

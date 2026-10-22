@@ -34,7 +34,7 @@
 /* Order tracking */
 .track { max-width: 720px; padding-block: 64px 90px; }
 .track h1 { font-size: clamp(40px, 6vw, 64px); line-height: 1; }
-.track .ref { display: inline-block; margin: 14px 0 6px; padding: 12px 22px; border: 2px dashed var(--button); border-radius: 16px; background: #f0d9c4; font: 500 34px var(--font-display); color: #7a3f1f; letter-spacing: 0.04em; overflow-wrap: anywhere; }
+.track .ref { display: inline-block; margin: 14px 0 6px; padding: 12px 22px; border: 2px dashed var(--button); border-radius: 16px; background: #fde6d3; font: 500 34px var(--font-display); color: #8a3a05; letter-spacing: 0.04em; overflow-wrap: anywhere; }
 .stepper { list-style: none; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; padding: 0; margin: 28px 0; }
 .stepper li { border-top: 4px solid var(--border); padding-top: 10px; font-size: 13px; text-transform: capitalize; color: var(--muted); }
 .stepper li.done { border-top-color: var(--olive); color: var(--olive); font-weight: 600; }
