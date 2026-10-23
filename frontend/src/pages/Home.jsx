@@ -77,7 +77,7 @@ export default function Home() {
         </div>
       </section>
 
-      <div className="marquee" aria-hidden="true"><div>{[0, 1].map((k) => ['Charcoal grill', 'Cold-pressed olive oil', 'Handmade pasta', 'Sea salt & citrus', 'Open every evening'].map((t) => <span key={`${k}${t}`}>{t}</span>))}</div></div>
+      <div className="band"><p>Open every evening · Charcoal grill, handmade pasta, sea salt &amp; citrus</p><Link to="/reservations">Reserve a table →</Link></div>
 
       <section className="container info-card" aria-label="Why guests choose us">
         <div className="inner">

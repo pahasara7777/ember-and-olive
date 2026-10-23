@@ -120,13 +120,6 @@
 .site .hero-info p { font-size: 13px; color: rgba(251, 247, 238, 0.75); }
 .site .hero-info .is-open::before { background: #8be08b; }
 
-/* Marquee strip */
-.marquee { overflow: hidden; background: var(--ember); color: var(--cream); border-block: 1px solid var(--ink); }
-.marquee div { display: flex; width: max-content; animation: marquee 38s linear infinite; }
-.marquee span { padding: 14px 28px; font: italic 300 22px var(--font-serif); white-space: nowrap; }
-.marquee span::after { content: '✦'; margin-left: 56px; font-style: normal; font-size: 14px; vertical-align: middle; }
-@keyframes marquee { to { transform: translateX(-50%); } }
-
 /* Pillars: numbered, hairline-divided */
 .site .info-card { margin-top: 0; }
 .site .info-card .inner { background: transparent; box-shadow: none; border-radius: 0; padding: 0; gap: 0; border-bottom: 1px solid var(--hair); }
@@ -274,3 +267,8 @@
 .site .info-dark h3 { color: var(--ember-hi); }
 .site .info-dark h3 { font: 600 11px var(--font-sans); letter-spacing: 0.18em; text-transform: uppercase; }
 .site .timeline h3 { font: 600 15px var(--font-sans); letter-spacing: 0; }
+
+/* Call-to-action band under the hero */
+.band { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px 32px; padding: 16px 24px; background: var(--ember); color: var(--cream); border-block: 1px solid var(--ink); text-align: center; }
+.band p { margin: 0; font: italic 300 20px var(--font-serif); }
+.band a { color: inherit; font-weight: 600; text-decoration: underline; text-underline-offset: 4px; }
