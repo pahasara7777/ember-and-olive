@@ -147,11 +147,12 @@
 .stats > div { flex: 1 1 140px; }
 .stats .n { color: #111; font-weight: 700; font-size: 34px; }
 .stats .l { font-size: 13px; }
-.reserve { display: flex; flex-wrap: wrap; align-items: stretch; background: #1a1a1a; border: 1px solid #2e2e2e; border-radius: 16px; overflow: hidden; }
-.reserve > div { flex: 1 1 min(100%, 440px); padding: 40px; }
+.reserve { flex: 1 1 100%; position: relative; display: grid; align-items: center; min-height: 340px; overflow: hidden; background: #1a1a1a; border-radius: 16px; }
+.reserve::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(20, 14, 8, .9) 30%, rgba(20, 14, 8, .2)); }
+.reserve img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.reserve > div { position: relative; z-index: 1; max-width: 560px; padding: 48px 40px; }
 .reserve h2 { font-size: clamp(26px, 3vw, 36px); margin: 4px 0 12px; }
-.reserve p:not(.eyebrow) { color: #cfcfcf; margin-bottom: 24px; }
-.reserve img { flex: 1 1 min(100%, 320px); min-height: 220px; max-height: 340px; width: 100%; object-fit: cover; border-radius: 0 0 0 200px; }
-@media (max-width: 640px) { .reserve > div { padding: 24px 20px; } .reserve img { min-height: 0; height: 170px; max-height: none; border-radius: 0 0 0 80px; } .years { width: 76px; height: 76px; } .years b { font-size: 20px; } }
+.reserve p:not(.eyebrow) { color: #e8e2d8; margin-bottom: 24px; }
+@media (max-width: 640px) { .reserve > div { padding: 32px 20px; } .years { width: 76px; height: 76px; } .years b { font-size: 20px; } }
 .cta-order { background: #111; }
 .event-band { background: var(--sand); }

@@ -162,10 +162,8 @@
 .site .stats { background: transparent; border-top: 1px solid var(--olive-line); border-radius: 0; padding: 36px 0 0; gap: 24px; }
 .site .stats .n { color: var(--cream); font: 300 clamp(48px, 6vw, 84px)/1 var(--font-serif); }
 .site .stats .l { color: rgba(251, 247, 238, 0.65); letter-spacing: 0.06em; font-size: 12px; text-transform: uppercase; }
-.site .reserve { background: var(--cream); color: var(--ink); border: 0; border-radius: 2px; }
-.site .reserve h2 { color: var(--ink); }
-.site .reserve p:not(.eyebrow) { color: var(--ink-2); }
-.site .reserve img { border-radius: 0; }
+.site .reserve { background: var(--ink); color: var(--cream); border: 0; border-radius: 2px; }
+.site .reserve h2 { color: var(--cream); }
 
 /* Category index */
 .site .cat-grid { grid-template-columns: 1fr; gap: 0; border-top: 1px solid var(--ink); counter-reset: cat; }
